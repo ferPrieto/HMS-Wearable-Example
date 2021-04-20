@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -21,10 +22,8 @@ import com.huawei.wearengine.device.DeviceClient
 import com.huawei.wearengine.p2p.Message
 import com.huawei.wearengine.p2p.P2pClient
 import com.huawei.wearengine.p2p.Receiver
-import com.huawei.wearengine.p2p.SendCallback
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.io.File
 import java.util.*
 
 class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
@@ -44,22 +43,15 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         HiWear.getDeviceClient(context)
     }
 
-    private fun tryNavigateTo(destination: Destination) {
-        val device = checkSelectedDevice()
-        device?.let {
-            val action = when (destination) {
-                Destination.Messaging -> DashboardFragmentDirections.actionDashboardFragmentToMessagingFragment(device.uuid)
-                else -> DashboardFragmentDirections.actionDashboardFragmentToPlayerFragment(device.uuid)
-            }
-            findNavController().navigate(action)
-        } ?: run {
-            printResultOnUIThread("No device selected, get available devices again")
-        }
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentDashboardBinding.inflate(inflater, container, false)
         return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.deviceRadioGroup.clearCheck()
+        binding.deviceRadioGroup.removeAllViews()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -83,9 +75,13 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         binding.mediaPlayer.setOnClickListener {
             tryNavigateTo(Destination.MediaPlayer)
         }
-        binding.deviceRadioGroup.setOnCheckedChangeListener { radioGroup: RadioGroup, childIndex: Int ->
-            if (radioGroup.childCount > 0 && childIndex != -1) {
-                tryToRegisterP2pClientReceiver(registerReceiver(), radioGroup.getChildAt(childIndex - 1) as RadioButton)
+        binding.deviceRadioGroup.setOnCheckedChangeListener { radioGroup: RadioGroup, checkedId: Int ->
+            if (radioGroup.childCount > 0 && checkedId != -1) {
+                radioGroup.children.first { childrenView ->
+                    childrenView.id == checkedId
+                }.let { childrenViewFound ->
+                    tryToRegisterP2pClientReceiver(registerReceiver(), childrenViewFound as RadioButton)
+                }
             }
         }
     }
@@ -109,14 +105,10 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     }
 
     private fun updateDeviceList(devices: List<Device>) {
-        binding.deviceRadioGroup.clearCheck()
-        binding.deviceRadioGroup.removeAllViews()
-
         devices.map { device ->
             printResultOnUIThread("device Name: " + device.name)
             printResultOnUIThread("device connect status:" + device.isConnected)
             getRadioButton(device).let { radioButton ->
-                radioButton.isChecked = device.isConnected
                 binding.deviceRadioGroup.addView(radioButton)
             }
             connectedDevices.add(device)
@@ -133,35 +125,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         binding.logOutputTextView.append(string + System.lineSeparator())
         binding.logOutputTextView.post {
             binding.scrollView.fullScroll(View.FOCUS_DOWN)
-        }
-    }
-
-    private fun sendFile(file: File) {
-        checkSelectedDevice().let { device ->
-            if (device == null || !device.isConnected) {
-                printResultOnUIThread("Click on get Devices button again")
-                return
-            }
-
-            val sendCallback: SendCallback = object : SendCallback {
-                override fun onSendResult(resultCode: Int) {
-                    printResultOnUIThread("Send file to ${device.name}'s ${credentialsProvider.getPeerPkgName()} Result: $resultCode")
-                }
-
-                override fun onSendProgress(progress: Long) {
-                    printResultOnUIThread("Send file to ${device.name}'s ${credentialsProvider.getPeerPkgName()} Progress: $progress")
-                }
-            }
-
-            Message.Builder()
-                    .setPayload(file)
-                    .build().let { message ->
-                        p2pClient.send(device, message, sendCallback).addOnSuccessListener {
-                            printResultOnUIThread("Sent file to ${device.name}'s ${credentialsProvider.getPeerPkgName()}")
-                        }.addOnFailureListener {
-                            printResultOnUIThread("Send file to ${device.name}'s ${credentialsProvider.getPeerPkgName()} failed")
-                        }
-                    }
         }
     }
 
@@ -189,7 +152,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 }
                 Message.MESSAGE_TYPE_FILE -> {
                     printResultOnUIThread("Received file")
-                    tryNavigateTo(Destination.MediaPlayer) //todo: remote control ready for recorded file
+                    tryNavigateTo(Destination.MediaPlayer)
                 }
                 Message.MESSAGE_TYPE_DEFAULT -> printResultOnUIThread("Received default message")
             }
@@ -219,6 +182,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                     printResultOnUIThread("The device seems to be disconnected")
                 }
             } ?: run {
+                radioButton.isChecked = false
                 printResultOnUIThread("Click on get Devices button again")
             }
         }
@@ -230,6 +194,19 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 LocalMessageType.PlayerCommand -> tryNavigateTo(Destination.MediaPlayer)
                 else -> tryNavigateTo(Destination.Messaging)
             }
+        }
+    }
+
+    private fun tryNavigateTo(destination: Destination) {
+        val device = checkSelectedDevice()
+        device?.let {
+            val action = when (destination) {
+                Destination.Messaging -> DashboardFragmentDirections.actionDashboardFragmentToMessagingFragment(device.uuid)
+                else -> DashboardFragmentDirections.actionDashboardFragmentToPlayerFragment(device.uuid)
+            }
+            findNavController().navigate(action)
+        } ?: run {
+            printResultOnUIThread("No device selected, get available devices again")
         }
     }
 }
