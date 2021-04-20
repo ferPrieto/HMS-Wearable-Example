@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_navigation"
+    app:startDestination="@id/dashboardFragment">
+
+    <fragment
+        android:id="@+id/dashboardFragment"
+        android:name="com.fprieto.hms.wearable.ui.DashboardFragment">
+        <action
+            android:id="@+id/action_dashboardFragment_to_messagingFragment"
+            app:destination="@id/messagingFragment"
+            app:popUpTo="@id/dashboardFragment">
+            <argument
+                android:name="deviceUuid"
+                app:argType="string" />
+        </action>
+        <action
+            android:id="@+id/action_dashboardFragment_to_playerFragment"
+            app:destination="@id/playerFragment"
+            app:popUpTo="@id/dashboardFragment">
+            <argument
+                android:name="deviceUuid"
+                app:argType="string" />
+        </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/messagingFragment"
+        android:name="com.fprieto.hms.wearable.ui.MessagingFragment">
+        <argument
+            android:name="deviceUuid"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/playerFragment"
+        android:name="com.fprieto.hms.wearable.ui.PlayerFragment">
+        <argument
+            android:name="deviceUuid"
+            app:argType="string" />
+    </fragment>
+</navigation>

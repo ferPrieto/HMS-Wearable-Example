@@ -1,0 +1,29 @@
+{
+	"agcgw_all":{
+		"CN":"connect-drcn.hispace.hicloud.com",
+		"CN_back":"connect-drcn.dbankcloud.cn",
+		"DE":"connect-dre.hispace.hicloud.com",
+		"DE_back":"connect-dre.dbankcloud.cn",
+		"RU":"connect-drru.hispace.hicloud.com",
+		"RU_back":"connect-drru.dbankcloud.cn",
+		"SG":"connect-dra.hispace.hicloud.com",
+		"SG_back":"connect-dra.dbankcloud.cn"
+	},
+	"client":{
+		"cp_id":"5190049000025371066",
+		"product_id":"736430079244844508",
+		"client_id":"580587541648901184",
+		"client_secret":"94BB66902BDF5CD9365120F6B43A002CE3A089422F28BA5111151EE404F7DDA5",
+		"project_id":"736430079244844508",
+		"app_id":"104116943",
+		"api_key":"CgB6e3x9hfVs/FrXNog4BkOj/onIc2PfqO/lkif5zPRiSUisJURFieA5kt5z0EHEQ8w3OalFTUeVt/WP7DfOvI6E",
+		"package_name":"com.fprieto.hms.wearable"
+	},
+	"configuration_version":"2.0",
+	"appInfos":[
+		{
+			"package_name":"com.fprieto.hms.wearable",
+			"app_id":"104116943"
+		}
+	]
+}
