@@ -44,7 +44,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
 
     private fun setDeviceIntoRadioButton(value: Device?) {
         binding.connectedDevice.text = value?.name
-        binding.connectedDevice.isChecked = true
+        binding.connectedDevice.isChecked = value?.isConnected ?: false
     }
 
     private val p2pClient: P2pClient by lazy {
@@ -143,7 +143,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
             message?.let { msg ->
                 when (msg.type) {
                     Message.MESSAGE_TYPE_DATA -> {
-                       // managePlayerCommands(msg)
+                        // managePlayerCommands(msg)
                         printResultOnUIThread("Received data")
                     }
                     Message.MESSAGE_TYPE_FILE -> {
@@ -162,14 +162,14 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
     }
 
     private fun managePlayerCommands(msg: Message) {
-      /*  messageCommandMapper.toMessageType(msg.data).let { commandType ->
-            when (commandType) {
-                CommandType.Play -> binding.videoPlayer.play(this, playerState)
-                CommandType.Pause -> binding.videoPlayer.pause()
-                CommandType.Rewind -> binding.videoPlayer.rewind()
-                else -> binding.videoPlayer.fastForward()
-            }
-        }*/
+        /*  messageCommandMapper.toMessageType(msg.data).let { commandType ->
+              when (commandType) {
+                  CommandType.Play -> binding.videoPlayer.play(this, playerState)
+                  CommandType.Pause -> binding.videoPlayer.pause()
+                  CommandType.Rewind -> binding.videoPlayer.rewind()
+                  else -> binding.videoPlayer.fastForward()
+              }
+          }*/
     }
 }
 

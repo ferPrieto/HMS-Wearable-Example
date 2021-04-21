@@ -15,7 +15,9 @@ import com.fprieto.hms.wearable.credentials.CredentialsProvider
 import com.fprieto.hms.wearable.databinding.FragmentDashboardBinding
 import com.fprieto.hms.wearable.extensions.await
 import com.fprieto.hms.wearable.mapper.RemoteDataMessageToLocalMapper
+import com.fprieto.hms.wearable.model.local.LocalDataMessage
 import com.fprieto.hms.wearable.model.local.LocalMessageType
+import com.fprieto.hms.wearable.model.local.LocalPlayerCommand
 import com.huawei.wearengine.HiWear
 import com.huawei.wearengine.device.Device
 import com.huawei.wearengine.device.DeviceClient
@@ -69,18 +71,18 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         }
 
         binding.messaging.setOnClickListener {
-            tryNavigateTo(Destination.Messaging)
+            navigateTo(Destination.Messaging)
         }
 
         binding.mediaPlayer.setOnClickListener {
-            tryNavigateTo(Destination.MediaPlayer)
+            navigateTo(Destination.MediaPlayer)
         }
         binding.deviceRadioGroup.setOnCheckedChangeListener { radioGroup: RadioGroup, checkedId: Int ->
             if (radioGroup.childCount > 0 && checkedId != -1) {
                 radioGroup.children.first { childrenView ->
                     childrenView.id == checkedId
                 }.let { childrenViewFound ->
-                    tryToRegisterP2pClientReceiver(registerReceiver(), childrenViewFound as RadioButton)
+                    registerP2pClientReceiver(registerReceiver(), childrenViewFound as RadioButton)
                 }
             }
         }
@@ -152,7 +154,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 }
                 Message.MESSAGE_TYPE_FILE -> {
                     printResultOnUIThread("Received file")
-                    tryNavigateTo(Destination.MediaPlayer)
+                    navigateTo(Destination.MediaPlayer)
                 }
                 Message.MESSAGE_TYPE_DEFAULT -> printResultOnUIThread("Received default message")
             }
@@ -163,7 +165,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         }
     }
 
-    private fun tryToRegisterP2pClientReceiver(receiver: Receiver, radioButton: RadioButton) {
+    private fun registerP2pClientReceiver(receiver: Receiver, radioButton: RadioButton) {
         checkSelectedDevice().let { device ->
             device?.let {
                 if (device.isConnected) {
@@ -190,24 +192,26 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
     private fun manageNavigation(msg: Message) {
         RemoteDataMessageToLocalMapper().toLocalDataMessage(msg).let { localDataMessage ->
-            when (localDataMessage.messageType) {
-                LocalMessageType.PlayerCommand -> tryNavigateTo(Destination.MediaPlayer)
-                else -> tryNavigateTo(Destination.Messaging)
-            }
+            navigateTo(localDataMessage)
         }
     }
 
-    private fun tryNavigateTo(destination: Destination) {
-        val device = checkSelectedDevice()
-        device?.let {
-            val action = when (destination) {
+    private fun navigateTo(localDataMessage: LocalDataMessage) {
+        checkSelectedDevice()?.let { device ->
+            val action = when (getDestination(localDataMessage)) {
                 Destination.Messaging -> DashboardFragmentDirections.actionDashboardFragmentToMessagingFragment(device.uuid)
-                else -> DashboardFragmentDirections.actionDashboardFragmentToPlayerFragment(device.uuid)
+                else -> DashboardFragmentDirections.actionDashboardFragmentToPlayerFragment(device.uuid, localDataMessage.playerCommand
+                        ?: LocalPlayerCommand.Play)
             }
             findNavController().navigate(action)
         } ?: run {
             printResultOnUIThread("No device selected, get available devices again")
         }
+    }
+
+    private fun getDestination(dataMessage: LocalDataMessage) = when (dataMessage.messageType) {
+        LocalMessageType.PlayerCommand -> Destination.MediaPlayer
+        else -> Destination.Messaging
     }
 }
 

@@ -22,6 +22,9 @@
             <argument
                 android:name="deviceUuid"
                 app:argType="string" />
+            <argument
+                android:name="playerCommand"
+                app:argType="com.fprieto.hms.wearable.model.local.LocalPlayerCommand" />
         </action>
     </fragment>
 
@@ -39,5 +42,8 @@
         <argument
             android:name="deviceUuid"
             app:argType="string" />
+        <argument
+            android:name="playerCommand"
+            app:argType="com.fprieto.hms.wearable.model.local.LocalPlayerCommand" />
     </fragment>
 </navigation>
