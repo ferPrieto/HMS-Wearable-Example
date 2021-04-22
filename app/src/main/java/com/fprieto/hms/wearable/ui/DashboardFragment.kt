@@ -71,11 +71,11 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         }
 
         binding.messaging.setOnClickListener {
-            navigateTo(Destination.Messaging)
+            navigateTo(LocalMessageType.TextMessage)
         }
 
         binding.mediaPlayer.setOnClickListener {
-            navigateTo(Destination.MediaPlayer)
+            navigateTo(LocalMessageType.PlayerCommand)
         }
         binding.deviceRadioGroup.setOnCheckedChangeListener { radioGroup: RadioGroup, checkedId: Int ->
             if (radioGroup.childCount > 0 && checkedId != -1) {
@@ -107,6 +107,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     }
 
     private fun updateDeviceList(devices: List<Device>) {
+        binding.deviceRadioGroup.removeAllViews()
         devices.map { device ->
             printResultOnUIThread("device Name: " + device.name)
             printResultOnUIThread("device connect status:" + device.isConnected)
@@ -132,13 +133,11 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
     private fun checkSelectedDevice(): Device? {
         binding.deviceRadioGroup.checkedRadioButtonId.let { buttonId ->
-            if (buttonId == -1) {
-                return null
-            }
-
-            val deviceUUID = binding.deviceRadioGroup.findViewById<RadioButton>(buttonId)?.getTag(R.id.device_tag)
-                    as? String? ?: return null
-            return getDeviceFromUDID(deviceUUID)
+            return if (buttonId != 1) {
+                (binding.deviceRadioGroup.findViewById<RadioButton>(buttonId)?.getTag(R.id.device_tag) as? String?)?.let { deviceUUId ->
+                    getDeviceFromUDID(deviceUUId)
+                } ?: run { null }
+            } else null
         }
     }
 
@@ -150,11 +149,11 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             when (msg.type) {
                 Message.MESSAGE_TYPE_DATA -> {
                     printResultOnUIThread("Received Text Message: $msg.data")
-                    manageNavigation(msg)
+                    navigateTo(msg.toLocalData())
                 }
                 Message.MESSAGE_TYPE_FILE -> {
                     printResultOnUIThread("Received file")
-                    navigateTo(Destination.MediaPlayer)
+                    navigateTo(msg.toLocalData())
                 }
                 Message.MESSAGE_TYPE_DEFAULT -> printResultOnUIThread("Received default message")
             }
@@ -190,30 +189,36 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         }
     }
 
-    private fun manageNavigation(msg: Message) {
-        RemoteDataMessageToLocalMapper().toLocalDataMessage(msg).let { localDataMessage ->
-            navigateTo(localDataMessage)
-        }
-    }
-
     private fun navigateTo(localDataMessage: LocalDataMessage) {
         checkSelectedDevice()?.let { device ->
-            val action = when (getDestination(localDataMessage)) {
+            when (getDestination(localDataMessage.messageType)) {
                 Destination.Messaging -> DashboardFragmentDirections.actionDashboardFragmentToMessagingFragment(device.uuid)
                 else -> DashboardFragmentDirections.actionDashboardFragmentToPlayerFragment(device.uuid, localDataMessage.playerCommand
                         ?: LocalPlayerCommand.Play)
-            }
-            findNavController().navigate(action)
+            }.let { findNavController().navigate(it) }
         } ?: run {
             printResultOnUIThread("No device selected, get available devices again")
         }
     }
 
-    private fun getDestination(dataMessage: LocalDataMessage) = when (dataMessage.messageType) {
+    private fun navigateTo(messageType: LocalMessageType) {
+        checkSelectedDevice()?.let { device ->
+            when (getDestination(messageType)) {
+                Destination.Messaging -> DashboardFragmentDirections.actionDashboardFragmentToMessagingFragment(device.uuid)
+                else -> DashboardFragmentDirections.actionDashboardFragmentToPlayerFragment(device.uuid, LocalPlayerCommand.Play)
+            }.let { findNavController().navigate(it) }
+        } ?: run {
+            printResultOnUIThread("No device selected, get available devices again")
+        }
+    }
+
+    private fun getDestination(messageType: LocalMessageType) = when (messageType) {
         LocalMessageType.PlayerCommand -> Destination.MediaPlayer
         else -> Destination.Messaging
     }
 }
+
+private fun Message.toLocalData() = RemoteDataMessageToLocalMapper().toLocalDataMessage(this)
 
 enum class Destination {
     Messaging,
