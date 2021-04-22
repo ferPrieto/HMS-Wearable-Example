@@ -26,7 +26,7 @@ class RemoteDataMessageToLocalMapper {
 
     private fun getPlayerCommand(dataMessage: RemoteDataMessage): LocalPlayerCommand? =
             dataMessage.playerCommand?.let { remotePlayerCommand ->
-                when (remotePlayerCommand.command) {
+                when (remotePlayerCommand.command.toLowerCase()) {
                     "play" -> LocalPlayerCommand.Play
                     "stop" -> LocalPlayerCommand.Pause
                     "rewind" -> LocalPlayerCommand.Rewind

@@ -52,6 +52,10 @@ internal class VideoPlayerComponent(
         }
     }
 
+    fun setPlayerState(playWhenReady:Boolean){
+        player?.playWhenReady = playWhenReady
+    }
+
     private fun releasePlayer() {
         updateStartPosition()
         disposePlayer()

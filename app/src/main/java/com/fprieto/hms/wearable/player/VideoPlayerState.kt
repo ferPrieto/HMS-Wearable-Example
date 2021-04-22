@@ -6,7 +6,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class VideoPlayerState(
-        internal var playWhenReady: Boolean = true,
+        internal var playWhenReady: Boolean = false,
         internal var currentWindow: Int = C.INDEX_UNSET,
         internal var playBackPosition: Long = 0,
         internal var videoUrl: String? = null

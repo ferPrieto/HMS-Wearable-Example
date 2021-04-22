@@ -24,20 +24,24 @@ class VideoPlayer @JvmOverloads constructor(context: Context, attributeSet: Attr
         binding = VideoPlayerBinding.inflate(inflater, this, true)
     }
 
-    fun play(owner: LifecycleOwner, playerState: VideoPlayerState) {
+    fun prepareToPlay(owner: LifecycleOwner, playerState: VideoPlayerState) {
         initVideoComponent(playerState)
         setPlayerState(playerState, owner)
     }
 
-    fun pause(){
-        binding.playerView.onPause()
+    fun play() {
+        videoComponent.setPlayerState(true)
     }
 
-    fun rewind(){
+    fun pause() {
+        videoComponent.setPlayerState(false)
+    }
+
+    fun rewind() {
         binding.playerView.setRewindIncrementMs(10)
     }
 
-    fun fastForward(){
+    fun fastForward() {
         binding.playerView.setFastForwardIncrementMs(10)
     }
 
@@ -57,15 +61,6 @@ class VideoPlayer @JvmOverloads constructor(context: Context, attributeSet: Attr
             videoComponent = VideoPlayerComponent(context, binding.playerView, playerState)
         }
     }
-
-    var isFullScreen: Boolean
-        set(value) {
-            if (value) {
-                hideSystemUi()
-                expand()
-            }
-        }
-        get() = this.systemUiVisibility == View.SYSTEM_UI_FLAG_FULLSCREEN
 
     private fun hideSystemUi() {
         binding.playerView.systemUiVisibility = (

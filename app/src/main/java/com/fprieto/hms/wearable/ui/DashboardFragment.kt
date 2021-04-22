@@ -14,7 +14,7 @@ import com.fprieto.hms.wearable.R
 import com.fprieto.hms.wearable.credentials.CredentialsProvider
 import com.fprieto.hms.wearable.databinding.FragmentDashboardBinding
 import com.fprieto.hms.wearable.extensions.await
-import com.fprieto.hms.wearable.mapper.RemoteDataMessageToLocalMapper
+import com.fprieto.hms.wearable.extensions.toLocalData
 import com.fprieto.hms.wearable.model.local.LocalDataMessage
 import com.fprieto.hms.wearable.model.local.LocalMessageType
 import com.fprieto.hms.wearable.model.local.LocalPlayerCommand
@@ -131,15 +131,14 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         }
     }
 
-    private fun checkSelectedDevice(): Device? {
-        binding.deviceRadioGroup.checkedRadioButtonId.let { buttonId ->
-            return if (buttonId != 1) {
-                (binding.deviceRadioGroup.findViewById<RadioButton>(buttonId)?.getTag(R.id.device_tag) as? String?)?.let { deviceUUId ->
-                    getDeviceFromUDID(deviceUUId)
-                } ?: run { null }
-            } else null
-        }
-    }
+    private fun checkSelectedDevice(): Device? =
+            binding.deviceRadioGroup.checkedRadioButtonId.let { buttonId ->
+                if (buttonId != 1) {
+                    (binding.deviceRadioGroup.findViewById<RadioButton>(buttonId)?.getTag(R.id.device_tag) as? String?)?.let { deviceUUId ->
+                        getDeviceFromUDID(deviceUUId)
+                    } ?: run { null }
+                } else null
+            }
 
     private fun getDeviceFromUDID(uuid: String): Device? =
             connectedDevices.firstOrNull { device -> device.uuid == uuid }
@@ -157,7 +156,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 }
                 Message.MESSAGE_TYPE_DEFAULT -> printResultOnUIThread("Received default message")
             }
-
         } ?: run {
             printResultOnUIThread("Failed to manage the message ")
             Timber.d("Failed to manage the message on Dashboard")
@@ -217,8 +215,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         else -> Destination.Messaging
     }
 }
-
-private fun Message.toLocalData() = RemoteDataMessageToLocalMapper().toLocalDataMessage(this)
 
 enum class Destination {
     Messaging,

@@ -57,7 +57,6 @@ class WearEngineMainActivity : AppCompatActivity() {
         }
     }
 
-
     override fun onSupportNavigateUp() =
             Navigation.findNavController(this, R.id.mainNavigationFragment).navigateUp()
 

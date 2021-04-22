@@ -8,7 +8,6 @@ import kotlin.coroutines.resumeWithException
 
 suspend fun <T> Task<T>.await(): T {
 
-    // fast path
     if (isComplete) {
         val e = exception
         return if (e == null) {

@@ -14,6 +14,9 @@ import com.fprieto.hms.wearable.audio.AudioPlayer
 import com.fprieto.hms.wearable.credentials.CredentialsProvider
 import com.fprieto.hms.wearable.databinding.FragmentPlayerBinding
 import com.fprieto.hms.wearable.extensions.await
+import com.fprieto.hms.wearable.extensions.toLocalData
+import com.fprieto.hms.wearable.model.local.LocalMessageType
+import com.fprieto.hms.wearable.model.local.LocalPlayerCommand
 import com.fprieto.hms.wearable.player.VideoPlayerState
 import com.huawei.wearengine.HiWear
 import com.huawei.wearengine.device.Device
@@ -23,9 +26,8 @@ import com.huawei.wearengine.p2p.P2pClient
 import com.huawei.wearengine.p2p.Receiver
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.*
 
-private const val PLAYER_STATE_KEY: String = "p"
+private const val PLAYER_STATE_KEY: String = "PLAYER_STATE_KEY"
 private const val VIDEO_URL: String = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
 
 class PlayerFragment : Fragment(R.layout.fragment_player) {
@@ -39,7 +41,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
         set(value) {
             field = value
             setDeviceIntoRadioButton(value)
-            registerReceiver()
+            registerReceivers()
         }
 
     private fun setDeviceIntoRadioButton(value: Device?) {
@@ -69,7 +71,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
 
     override fun onResume() {
         super.onResume()
-        registerReceiver()
+        registerReceivers()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -90,14 +92,12 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
             lifecycleScope.launch {
                 try {
                     deviceClient.bondedDevices.await().let { devices ->
-                        if (devices.isNullOrEmpty()) {
+                        devices.firstOrNull { device -> device.uuid == uuId }?.let { device ->
+                            selectedDevice = device
+                        } ?: run {
                             Toast.makeText(context, "The device selected is unavailable", Toast.LENGTH_SHORT).show()
                             Timber.e("The device selected is unavailable")
                             findNavController().navigateUp()
-                            return@launch
-                        }
-                        devices.firstOrNull { device -> device.uuid == uuId }?.let { device ->
-                            selectedDevice = device
                         }
                     }
                 } catch (e: Exception) {
@@ -129,6 +129,8 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
 
     private fun renderVideo() {
         playerState = playerState.checkAndSet(VIDEO_URL)
+        printResultOnUIThread("Video URL loaded")
+        binding.videoPlayer.prepareToPlay(this, playerState)
     }
 
     private fun printResultOnUIThread(string: String) = requireActivity().runOnUiThread {
@@ -138,13 +140,13 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
         }
     }
 
-    private fun registerReceiver() {
+    private fun registerReceivers() {
         val receiver = Receiver { message ->
             message?.let { msg ->
                 when (msg.type) {
                     Message.MESSAGE_TYPE_DATA -> {
-                        // managePlayerCommands(msg)
                         printResultOnUIThread("Received data")
+                        managePlayerCommands(msg)
                     }
                     Message.MESSAGE_TYPE_FILE -> {
                         printResultOnUIThread("Received file")
@@ -161,15 +163,30 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
                 .addOnFailureListener { printResultOnUIThread("Register receiver listener failed!") }
     }
 
-    private fun managePlayerCommands(msg: Message) {
-        /*  messageCommandMapper.toMessageType(msg.data).let { commandType ->
-              when (commandType) {
-                  CommandType.Play -> binding.videoPlayer.play(this, playerState)
-                  CommandType.Pause -> binding.videoPlayer.pause()
-                  CommandType.Rewind -> binding.videoPlayer.rewind()
-                  else -> binding.videoPlayer.fastForward()
-              }
-          }*/
+    private fun managePlayerCommands(message: Message) {
+        message.toLocalData().let { dataMessage ->
+            if (dataMessage.messageType == LocalMessageType.PlayerCommand) {
+                when (dataMessage.playerCommand) {
+                    LocalPlayerCommand.Play -> {
+                        binding.videoPlayer.play()
+                        printResultOnUIThread("Play Command Selected")
+                    }
+                    LocalPlayerCommand.Pause ->{
+                        binding.videoPlayer.pause()
+                        printResultOnUIThread("Pause Command Selected")
+                    }
+                    LocalPlayerCommand.Rewind -> {
+                        binding.videoPlayer.rewind()
+                        printResultOnUIThread("Rewind Command Selected")
+                    }
+                    else -> {
+                        binding.videoPlayer.fastForward()
+                        printResultOnUIThread("FastForward Command Selected")
+                    }
+                }
+            }
+        }
     }
 }
+
 
