@@ -16,6 +16,7 @@ import com.fprieto.hms.wearable.R
 import com.fprieto.hms.wearable.audio.AudioPlayer
 import com.fprieto.hms.wearable.credentials.CredentialsProvider
 import com.fprieto.hms.wearable.databinding.FragmentMessagingBinding
+import com.fprieto.hms.wearable.databinding.ViewLogsBinding
 import com.fprieto.hms.wearable.extensions.await
 import com.huawei.wearengine.HiWear
 import com.huawei.wearengine.device.Device
@@ -37,9 +38,11 @@ private val TAKE_PHOTO_PERMISSIONS = arrayOf(Manifest.permission.WRITE_EXTERNAL_
 
 class MessagingFragment : Fragment(R.layout.fragment_messaging) {
 
-    private lateinit var sendCallback: SendCallback
     private lateinit var binding: FragmentMessagingBinding
+    private lateinit var viewLogsBinding: ViewLogsBinding
+
     private val credentialsProvider: CredentialsProvider = CredentialsProvider()
+    private lateinit var sendCallback: SendCallback
     private var selectedDevice: Device? = null
         set(value) {
             field = value
@@ -87,6 +90,7 @@ class MessagingFragment : Fragment(R.layout.fragment_messaging) {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentMessagingBinding.inflate(inflater, container, false)
+        viewLogsBinding = ViewLogsBinding.bind(binding.root)
         return binding.root
     }
 
@@ -127,7 +131,7 @@ class MessagingFragment : Fragment(R.layout.fragment_messaging) {
 
     private fun initButtons() {
         binding.clearLogs.setOnClickListener {
-            binding.logOutputTextView.text = ""
+            viewLogsBinding.logOutputTextView.text = ""
         }
 
         binding.pingDevice.setOnClickListener {
@@ -271,9 +275,9 @@ class MessagingFragment : Fragment(R.layout.fragment_messaging) {
 
     private fun appendOnOutputView(text: String) {
         requireActivity().runOnUiThread {
-            binding.logOutputTextView.append(text + System.lineSeparator())
-            binding.logOutputTextView.post {
-                binding.scrollView.fullScroll(View.FOCUS_DOWN)
+            viewLogsBinding.logOutputTextView.append(text + System.lineSeparator())
+            viewLogsBinding.logOutputTextView.post {
+                viewLogsBinding.scrollView.fullScroll(View.FOCUS_DOWN)
             }
         }
     }

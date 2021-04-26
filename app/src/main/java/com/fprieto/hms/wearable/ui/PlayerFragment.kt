@@ -12,6 +12,7 @@ import com.fprieto.hms.wearable.R
 import com.fprieto.hms.wearable.audio.AudioPlayer
 import com.fprieto.hms.wearable.credentials.CredentialsProvider
 import com.fprieto.hms.wearable.databinding.FragmentPlayerBinding
+import com.fprieto.hms.wearable.databinding.ViewLogsBinding
 import com.fprieto.hms.wearable.extensions.await
 import com.fprieto.hms.wearable.extensions.toLocalData
 import com.fprieto.hms.wearable.model.local.LocalMessageType
@@ -32,6 +33,7 @@ private const val VIDEO_URL: String = "https://commondatastorage.googleapis.com/
 class PlayerFragment : Fragment(R.layout.fragment_player) {
 
     private lateinit var binding: FragmentPlayerBinding
+    private lateinit var viewLogsBinding: ViewLogsBinding
 
     private val credentialsProvider: CredentialsProvider = CredentialsProvider()
     private var playerState: VideoPlayerState = VideoPlayerState()
@@ -75,6 +77,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentPlayerBinding.inflate(inflater, container, false)
+        viewLogsBinding = ViewLogsBinding.bind(binding.root)
         return binding.root
     }
 
@@ -113,7 +116,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
 
     private fun initButtons() {
         binding.clearLogs.setOnClickListener {
-            binding.logOutputTextView.text = ""
+            viewLogsBinding.logOutputTextView.text = ""
         }
     }
 
@@ -188,9 +191,9 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
 
     private fun appendOnOutputView(text: String) {
         requireActivity().runOnUiThread {
-            binding.logOutputTextView.append(text + System.lineSeparator())
-            binding.logOutputTextView.post {
-                binding.scrollView.fullScroll(View.FOCUS_DOWN)
+            viewLogsBinding.logOutputTextView.append(text + System.lineSeparator())
+            viewLogsBinding.logOutputTextView.post {
+                viewLogsBinding.scrollView.fullScroll(View.FOCUS_DOWN)
             }
         }
     }

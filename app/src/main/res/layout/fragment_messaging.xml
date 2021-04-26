@@ -30,7 +30,7 @@
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
-        android:text="@string/send_message"
+        android:text="@string/messaging_send_message"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ping_device" />
@@ -40,7 +40,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="@string/take_photo"
+        android:text="@string/messaging_take_photo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/send_message" />
+
+    <Button
+        android:id="@+id/send_notification"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/messaging_take_photo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/send_message" />
@@ -50,33 +60,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="@string/clear_log"
+        android:text="@string/messaging_clear_log"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/take_photo" />
 
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/scrollView"
+    <include
+        layout="@layout/view_logs"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:fillViewport="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/clear_logs">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/log_output_text_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:hint="@string/log_output"
-                android:padding="4dp"
-                android:scrollbars="vertical" />
-
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/clear_logs" />
 </androidx.constraintlayout.widget.ConstraintLayout>

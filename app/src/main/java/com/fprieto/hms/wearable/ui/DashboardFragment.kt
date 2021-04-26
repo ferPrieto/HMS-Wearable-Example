@@ -13,6 +13,7 @@ import androidx.navigation.fragment.findNavController
 import com.fprieto.hms.wearable.R
 import com.fprieto.hms.wearable.credentials.CredentialsProvider
 import com.fprieto.hms.wearable.databinding.FragmentDashboardBinding
+import com.fprieto.hms.wearable.databinding.ViewLogsBinding
 import com.fprieto.hms.wearable.extensions.await
 import com.fprieto.hms.wearable.extensions.toLocalData
 import com.fprieto.hms.wearable.model.local.LocalDataMessage
@@ -30,6 +31,7 @@ import timber.log.Timber
 class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
     private lateinit var binding: FragmentDashboardBinding
+    private lateinit var viewLogsBinding: ViewLogsBinding
     private val connectedDevices: MutableList<Device> = mutableListOf()
     private val credentialsProvider: CredentialsProvider = CredentialsProvider()
 
@@ -46,6 +48,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentDashboardBinding.inflate(inflater, container, false)
+        viewLogsBinding = ViewLogsBinding.bind(binding.root)
         return binding.root
     }
 
@@ -66,7 +69,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         }
 
         binding.clearLogs.setOnClickListener {
-            binding.logOutputTextView.text = ""
+            viewLogsBinding.logOutputTextView.text = ""
         }
 
         binding.messaging.setOnClickListener {
@@ -214,9 +217,9 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
     private fun appendOnOutputView(text: String) {
         requireActivity().runOnUiThread {
-            binding.logOutputTextView.append(text + System.lineSeparator())
-            binding.logOutputTextView.post {
-                binding.scrollView.fullScroll(View.FOCUS_DOWN)
+            viewLogsBinding.logOutputTextView.append(text + System.lineSeparator())
+            viewLogsBinding.logOutputTextView.post {
+                viewLogsBinding.scrollView.fullScroll(View.FOCUS_DOWN)
             }
         }
     }

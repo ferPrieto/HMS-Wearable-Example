@@ -3,23 +3,32 @@
 
     <string name="peer_pkg_name">App Package Name:</string>
     <string name="dest_message">Message Content:</string>
+
     <string name="dashboard_get_devices">Get Devices</string>
     <string name="dashboard_button_messaging">Messaging</string>
     <string name="dashboard_button_media_player">Media Player</string>
-    <string name="send_message">Send Generic Message</string>
+    <string name="dashboard_available_devices_title">Available Devices</string>
+    <string name="dashboard_clear_log">Clear Logs</string>
+
     <string name="receive_message">Receive Message</string>
     <string name="send_file">Send File</string>
-    <string name="take_photo">Take Photos And Send</string>
+
+    <string name="messaging_send_message">Send Generic Message</string>
+    <string name="messaging_take_photo">Take Photos And Send</string>
+    <string name="messaging_send_notification">Send Notification</string>
+    <string name="messaging_clear_log">Clear Logs</string>
+    <string name="messaging_button_ping">Ping Device</string>
+
+    <string name="player_clear_log">Clear Logs</string>
+
+
     <string name="cancel_receive_message">Cancel Receiver Message</string>
-    <string name="clear_log">Clear Logs</string>
     <string name="log_output">Log output:</string>
     <string name="cancel_monitor_report">removeConnectionMonitor</string>
     <string name="receive_monitor_report">addConnectionMonitor</string>
     <string name="device_manager_description">Obtains the list of bound devices:</string>
     <string name="p2p_manager_description">P2P communication and message management:</string>
     <string name="monitor_manager_description">Registering or unregistering a listener for monitoring the connection status:</string>
-    <string name="dashboard_available_devices_title">Available Devices</string>
 
-    <string name="messaging_button_ping">Ping Device</string>
 
 </resources>
