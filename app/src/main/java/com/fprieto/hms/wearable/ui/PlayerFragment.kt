@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -95,14 +94,12 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
                         devices.firstOrNull { device -> device.uuid == uuId }?.let { device ->
                             selectedDevice = device
                         } ?: run {
-                            Toast.makeText(context, "The device selected is unavailable", Toast.LENGTH_SHORT).show()
-                            Timber.e("The device selected is unavailable")
+                            "The device selected is unavailable".logResult()
                             findNavController().navigateUp()
                         }
                     }
                 } catch (e: Exception) {
-                    Toast.makeText(context, "Error getting available devices", Toast.LENGTH_SHORT).show()
-                    Timber.e(e, "Error getting available devices: ${e.message}")
+                    "Error getting available devices: ${e.message}".logError(e)
                     findNavController().navigateUp()
                 }
             }
@@ -129,15 +126,8 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
 
     private fun renderVideo() {
         playerState = playerState.checkAndSet(VIDEO_URL)
-        printResultOnUIThread("Video URL loaded")
+        "Video URL loaded".logResult()
         binding.videoPlayer.prepareToPlay(this, playerState)
-    }
-
-    private fun printResultOnUIThread(string: String) = requireActivity().runOnUiThread {
-        binding.logOutputTextView.append(string + System.lineSeparator())
-        binding.logOutputTextView.post {
-            binding.scrollView.fullScroll(View.FOCUS_DOWN)
-        }
     }
 
     private fun registerReceivers() {
@@ -145,22 +135,20 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
             message?.let { msg ->
                 when (msg.type) {
                     Message.MESSAGE_TYPE_DATA -> {
-                        printResultOnUIThread("Received data")
+                        "Received data".logResult()
                         managePlayerCommands(msg)
                     }
-                    Message.MESSAGE_TYPE_FILE -> {
-                        printResultOnUIThread("Received file")
-                    }
-                    Message.MESSAGE_TYPE_DEFAULT -> printResultOnUIThread("Received default message")
+                    Message.MESSAGE_TYPE_FILE -> "Received file".logResult()
+
+                    Message.MESSAGE_TYPE_DEFAULT -> "Received default message".logResult()
                 }
             } ?: run {
-                printResultOnUIThread("Failed to manage the message command")
-                Timber.d("Failed to manage the message on Player")
+                "Failed to manage the message command".logResult()
             }
         }
         p2pClient.registerReceiver(selectedDevice, receiver)
-                .addOnSuccessListener { printResultOnUIThread("Register receiver listener succeed!") }
-                .addOnFailureListener { printResultOnUIThread("Register receiver listener failed!") }
+                .addOnSuccessListener { "Register receiver listener succeed!".logResult() }
+                .addOnFailureListener { "Register receiver listener failed!".logError(it) }
     }
 
     private fun managePlayerCommands(message: Message) {
@@ -169,21 +157,40 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
                 when (dataMessage.playerCommand) {
                     LocalPlayerCommand.Play -> {
                         binding.videoPlayer.play()
-                        printResultOnUIThread("Play Command Selected")
+                        "Play Command Selected".logResult()
                     }
-                    LocalPlayerCommand.Pause ->{
+                    LocalPlayerCommand.Pause -> {
                         binding.videoPlayer.pause()
-                        printResultOnUIThread("Pause Command Selected")
+                        "Pause Command Selected".logResult()
                     }
                     LocalPlayerCommand.Rewind -> {
                         binding.videoPlayer.rewind()
-                        printResultOnUIThread("Rewind Command Selected")
+                        "Rewind Command Selected".logResult()
                     }
                     else -> {
                         binding.videoPlayer.fastForward()
-                        printResultOnUIThread("FastForward Command Selected")
+                        "FastForward Command Selected".logResult()
                     }
                 }
+            }
+        }
+    }
+
+    private fun String.logResult() {
+        appendOnOutputView(this)
+        Timber.d(this)
+    }
+
+    private fun String.logError(exception: Exception) {
+        appendOnOutputView(this)
+        Timber.e(exception, this)
+    }
+
+    private fun appendOnOutputView(text: String) {
+        requireActivity().runOnUiThread {
+            binding.logOutputTextView.append(text + System.lineSeparator())
+            binding.logOutputTextView.post {
+                binding.scrollView.fullScroll(View.FOCUS_DOWN)
             }
         }
     }

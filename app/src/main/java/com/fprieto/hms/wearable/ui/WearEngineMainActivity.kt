@@ -1,7 +1,6 @@
 package com.fprieto.hms.wearable.ui
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.Navigation
 import com.fprieto.hms.wearable.R
@@ -24,14 +23,15 @@ class WearEngineMainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
         try {
-            val grantedPermissions = authClient.checkPermissions(hiWearPermissions)
-            val allPermissionsGranted = grantedPermissions.isSuccessful
-            Timber.d("All permission granted: $allPermissionsGranted")
-            if (!allPermissionsGranted) {
-                askForHiWearPermissions()
+            authClient.checkPermissions(hiWearPermissions).isSuccessful.let { allGranted ->
+                "All permission granted: $allGranted".logResult()
+                if (!allGranted) {
+                    askForHiWearPermissions()
+                }
             }
+
         } catch (e: Exception) {
-            Timber.e(e, "Failed to ask for permissions")
+            "Failed to ask for permissions".logResult()
             onNotAllPermissionGranted()
         }
     }
@@ -52,39 +52,15 @@ class WearEngineMainActivity : AppCompatActivity() {
 
     private fun onNotAllPermissionGranted() {
         runOnUiThread {
-            Toast.makeText(this, "Not all permission are granted for HiWear!", Toast.LENGTH_SHORT).show()
+            "Not all permission are granted for HiWear!".logResult()
             finish()
         }
     }
 
     override fun onSupportNavigateUp() =
             Navigation.findNavController(this, R.id.mainNavigationFragment).navigateUp()
+}
 
-
-    /*
-       private fun displayNotificationOnWearable(title: String, text: String) {
-           val device = checkSelectedDevice()
-           if (device == null) {
-               printResultOnUIThread("No device is selected")
-               return
-           }
-
-           val client = HiWear.getNotifyClient(this)
-           val notification = Notification.Builder()
-                   .setPackageName(PEER_PKG_NAME)
-                   .setTemplateId(NotificationTemplate.NOTIFICATION_TEMPLATE_ONE_BUTTON)
-                   .setButtonContents(hashMapOf(Pair(NotificationConstants.BUTTON_ONE_CONTENT_KEY, "Okay")))
-                   .setTitle(title)
-                   .setText(text)
-                   .build()
-
-           client.notify(device, notification).addOnSuccessListener {
-               printResultOnUIThread("Send notification successfully!")
-           }.addOnFailureListener { e ->
-               Timber.e(e, "Failed to send notification")
-               printResultOnUIThread("On notification error: ${e.message}")
-           }
-       }*/
-
-
+private fun String.logResult() {
+    Timber.d(this)
 }

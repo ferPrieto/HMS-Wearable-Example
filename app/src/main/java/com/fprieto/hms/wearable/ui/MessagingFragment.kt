@@ -20,6 +20,9 @@ import com.fprieto.hms.wearable.extensions.await
 import com.huawei.wearengine.HiWear
 import com.huawei.wearengine.device.Device
 import com.huawei.wearengine.device.DeviceClient
+import com.huawei.wearengine.notify.Notification
+import com.huawei.wearengine.notify.NotificationConstants
+import com.huawei.wearengine.notify.NotificationTemplate
 import com.huawei.wearengine.p2p.Message
 import com.huawei.wearengine.p2p.P2pClient
 import com.huawei.wearengine.p2p.Receiver
@@ -34,6 +37,7 @@ private val TAKE_PHOTO_PERMISSIONS = arrayOf(Manifest.permission.WRITE_EXTERNAL_
 
 class MessagingFragment : Fragment(R.layout.fragment_messaging) {
 
+    private lateinit var sendCallback: SendCallback
     private lateinit var binding: FragmentMessagingBinding
     private val credentialsProvider: CredentialsProvider = CredentialsProvider()
     private var selectedDevice: Device? = null
@@ -127,7 +131,7 @@ class MessagingFragment : Fragment(R.layout.fragment_messaging) {
         }
 
         binding.pingDevice.setOnClickListener {
-            pingBoundDevices()
+            pingSelectedDevice()
         }
 
         binding.sendMessage.setOnClickListener {
@@ -139,83 +143,73 @@ class MessagingFragment : Fragment(R.layout.fragment_messaging) {
         }
     }
 
-    private fun printResultOnUIThread(string: String) = requireActivity().runOnUiThread {
-        binding.logOutputTextView.append(string + System.lineSeparator())
-        binding.logOutputTextView.post {
-            binding.scrollView.fullScroll(View.FOCUS_DOWN)
+    private fun pingSelectedDevice() {
+        if (selectedDevice?.isConnected == true) {
+            pingDevice(selectedDevice)
+        } else {
+            logErrorAndGoToDashboard()
         }
     }
 
-    private fun pingBoundDevices() {
-        if (selectedDevice?.isConnected == false) {
-            printResultOnUIThread("Click on get Devices button again")
-            return
-        }
-
-        p2pClient.ping(selectedDevice) { result ->
-            val text = "${Date()} Ping ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} Result: $result"
-            printResultOnUIThread(text)
+    private fun pingDevice(device: Device?) {
+        p2pClient.ping(device) { result ->
+            "${Date()} Ping ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} Result: $result".logResult()
         }.addOnSuccessListener {
-            printResultOnUIThread("Pinged ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} succeed")
-        }.addOnFailureListener {
-            printResultOnUIThread("Ping ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} failed")
+            "Pinged ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} succeed".logResult()
+        }.addOnFailureListener { exception ->
+            "Ping ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} failed".logError(exception)
         }
     }
 
     private fun sendMessage(text: String) {
-        if (selectedDevice?.isConnected == false) {
-            printResultOnUIThread("Click on get Devices button again")
-            return
+        if (selectedDevice?.isConnected == true) {
+            buildMessageAndSend(text)
+        } else {
+            logErrorAndGoToDashboard()
         }
+    }
 
-        val sendCallback: SendCallback = object : SendCallback {
+    private fun initResultCallbackAndSender() {
+        sendCallback = object : SendCallback {
             override fun onSendResult(resultCode: Int) {
-                printResultOnUIThread("Send message to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} Result: $resultCode")
+                "Send message to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} Result: $resultCode".logResult()
             }
 
             override fun onSendProgress(progress: Long) {
-                printResultOnUIThread("Send message to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} Progress: $progress")
+                "Send message to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} Progress: $progress".logResult()
             }
         }
+        "Send Result Callback Registered!".logResult()
+    }
 
+    private fun buildMessageAndSend(text: String) {
         Message.Builder()
                 .setPayload(text.toByteArray())
                 .build().let { message ->
                     p2pClient.send(selectedDevice, message, sendCallback).addOnSuccessListener {
-                        printResultOnUIThread("Sent message to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()}")
+                        "Sent message to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()}".logResult()
                     }.addOnFailureListener {
-                        printResultOnUIThread("Send message to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} failed")
+                        "Send message to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} failed".logResult()
                     }
                 }
     }
 
     private fun sendFile(file: File) {
-        if (selectedDevice?.isConnected == false) {
-            printResultOnUIThread("Click on get Devices button again")
-            return
+        if (selectedDevice?.isConnected == true) {
+            buildFileMessageBuilderAndSend(file, sendCallback)
+        } else {
+            logErrorAndGoToDashboard()
         }
-
-        val sendCallback: SendCallback = object : SendCallback {
-            override fun onSendResult(resultCode: Int) {
-                printResultOnUIThread("Send file to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} Result: $resultCode")
-            }
-
-            override fun onSendProgress(progress: Long) {
-                printResultOnUIThread("Send file to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} Progress: $progress")
-            }
-        }
-
-        initMessageBuilder(file, sendCallback)
     }
 
-    private fun initMessageBuilder(file: File, sendCallback: SendCallback) {
+    private fun buildFileMessageBuilderAndSend(file: File, sendCallback: SendCallback) {
         Message.Builder()
                 .setPayload(file)
                 .build().let { message ->
                     p2pClient.send(selectedDevice, message, sendCallback).addOnSuccessListener {
-                        printResultOnUIThread("Sent file to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()}")
+                        "Sent file to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()}".logResult()
                     }.addOnFailureListener {
-                        printResultOnUIThread("Send file to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} failed")
+                        "Send file to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} failed".logResult()
                     }
                 }
     }
@@ -224,19 +218,63 @@ class MessagingFragment : Fragment(R.layout.fragment_messaging) {
         val receiver = Receiver { message ->
             message?.let {
                 when (it.type) {
-                    Message.MESSAGE_TYPE_DATA -> {
-                        val data = String(message.data)
-                        printResultOnUIThread("Received Text Message: $data")
-                    }
-                    Message.MESSAGE_TYPE_FILE -> {
-                        printResultOnUIThread("Received file")
-                    }
-                    Message.MESSAGE_TYPE_DEFAULT -> printResultOnUIThread("Received default message")
+                    Message.MESSAGE_TYPE_DATA -> "Received Text Message: ${String(message.data)}".logResult()
+                    Message.MESSAGE_TYPE_FILE -> "Received file".logResult()
+                    Message.MESSAGE_TYPE_DEFAULT -> "Received default message".logResult()
                 }
             }
         }
         p2pClient.registerReceiver(selectedDevice, receiver)
-                .addOnSuccessListener { printResultOnUIThread("Register receiver listener succeed!") }
-                .addOnFailureListener { printResultOnUIThread("Register receiver listener failed!") }
+                .addOnSuccessListener {
+                    "Register receiver listener succeed!".logResult()
+                    initResultCallbackAndSender()
+                }
+                .addOnFailureListener { "Register receiver listener failed!".logResult() }
+    }
+
+    private fun displayNotificationOnWearable(title: String, text: String) {
+        if (selectedDevice?.isConnected == true) {
+            val notification = Notification.Builder()
+                    .setPackageName(credentialsProvider.getPeerPkgName())
+                    .setTemplateId(NotificationTemplate.NOTIFICATION_TEMPLATE_ONE_BUTTON)
+                    .setButtonContents(hashMapOf(Pair(NotificationConstants.BUTTON_ONE_CONTENT_KEY, "Okay")))
+                    .setTitle(title)
+                    .setText(text)
+                    .build()
+
+            HiWear.getNotifyClient(context).let { client ->
+                client.notify(selectedDevice, notification).addOnSuccessListener {
+                    "Send notification successfully!".logResult()
+                }.addOnFailureListener { e ->
+                    "Failed to send notification".logError(e)
+                }
+            }
+        } else {
+            logErrorAndGoToDashboard()
+        }
+    }
+
+    private fun logErrorAndGoToDashboard() {
+        "Lost connection with the device".logResult()
+        findNavController().navigateUp()
+    }
+
+    private fun String.logResult() {
+        appendOnOutputView(this)
+        Timber.d(this)
+    }
+
+    private fun String.logError(exception: Exception) {
+        appendOnOutputView(this)
+        Timber.e(exception, this)
+    }
+
+    private fun appendOnOutputView(text: String) {
+        requireActivity().runOnUiThread {
+            binding.logOutputTextView.append(text + System.lineSeparator())
+            binding.logOutputTextView.post {
+                binding.scrollView.fullScroll(View.FOCUS_DOWN)
+            }
+        }
     }
 }

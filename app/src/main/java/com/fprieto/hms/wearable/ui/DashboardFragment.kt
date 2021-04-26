@@ -26,7 +26,6 @@ import com.huawei.wearengine.p2p.P2pClient
 import com.huawei.wearengine.p2p.Receiver
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.*
 
 class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
@@ -78,12 +77,16 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             navigateTo(LocalMessageType.PlayerCommand)
         }
         binding.deviceRadioGroup.setOnCheckedChangeListener { radioGroup: RadioGroup, checkedId: Int ->
-            if (radioGroup.childCount > 0 && checkedId != -1) {
-                radioGroup.children.first { childrenView ->
-                    childrenView.id == checkedId
-                }.let { childrenViewFound ->
-                    registerP2pClientReceiver(registerReceiver(), childrenViewFound as RadioButton)
-                }
+            selectRadioButton(radioGroup, checkedId)
+        }
+    }
+
+    private fun selectRadioButton(radioGroup: RadioGroup, checkedId: Int) {
+        if (radioGroup.childCount > 0 && checkedId != -1) {
+            radioGroup.children.first { childrenView ->
+                childrenView.id == checkedId
+            }.let { childrenViewFound ->
+                registerP2pClientReceiver(registerReceiver(), childrenViewFound as RadioButton)
             }
         }
     }
@@ -92,16 +95,15 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         lifecycleScope.launch {
             try {
                 deviceClient.bondedDevices.await().let { devices ->
-                    if (devices.isNullOrEmpty()) {
-                        printResultOnUIThread("Devices list is null or empty")
-                        return@launch
+                    if (devices.isNotEmpty()) {
+                        "Bonded Devices onSuccess! devices list size = ${devices.size}".logResult()
+                        updateDeviceList(devices)
+                    } else {
+                        "Devices list is null or empty".logResult()
                     }
-                    printResultOnUIThread("Bonded Devices onSuccess! devices list size = " + devices.size)
-                    updateDeviceList(devices)
                 }
             } catch (e: Exception) {
-                Timber.e(e, "Failed to get of bounded devices: ${e.message}")
-                printResultOnUIThread("Bonded Devices task submission error: ${e.message}")
+                "Failed to get of bounded devices: ${e.message}".logError(e)
             }
         }
     }
@@ -109,8 +111,8 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     private fun updateDeviceList(devices: List<Device>) {
         binding.deviceRadioGroup.removeAllViews()
         devices.map { device ->
-            printResultOnUIThread("device Name: " + device.name)
-            printResultOnUIThread("device connect status:" + device.isConnected)
+            "device Name: ${device.name}".logResult()
+            "device connect status: ${device.isConnected}".logResult()
             getRadioButton(device).let { radioButton ->
                 binding.deviceRadioGroup.addView(radioButton)
             }
@@ -122,13 +124,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         id = View.generateViewId()
         text = device.name
         setTag(R.id.device_tag, device.uuid)
-    }
-
-    private fun printResultOnUIThread(string: String) = requireActivity().runOnUiThread {
-        binding.logOutputTextView.append(string + System.lineSeparator())
-        binding.logOutputTextView.post {
-            binding.scrollView.fullScroll(View.FOCUS_DOWN)
-        }
     }
 
     private fun checkSelectedDevice(): Device? =
@@ -147,19 +142,16 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         message?.let { msg ->
             when (msg.type) {
                 Message.MESSAGE_TYPE_DATA -> {
-                    printResultOnUIThread("Received Text Message: $msg.data")
+                    "Received Text Message: $msg.data".logResult()
                     navigateTo(msg.toLocalData())
                 }
                 Message.MESSAGE_TYPE_FILE -> {
-                    printResultOnUIThread("Received file")
+                    "Received file".logResult()
                     navigateTo(msg.toLocalData())
                 }
-                Message.MESSAGE_TYPE_DEFAULT -> printResultOnUIThread("Received default message")
+                Message.MESSAGE_TYPE_DEFAULT -> "Received default message".logResult()
             }
-        } ?: run {
-            printResultOnUIThread("Failed to manage the message ")
-            Timber.d("Failed to manage the message on Dashboard")
-        }
+        } ?: run { "Failed to manage the message on Dashboard".logResult() }
     }
 
     private fun registerP2pClientReceiver(receiver: Receiver, radioButton: RadioButton) {
@@ -168,21 +160,20 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 if (device.isConnected) {
                     p2pClient.registerReceiver(device, receiver)
                             .addOnSuccessListener {
-                                printResultOnUIThread("Register receiver listener succeed!")
+                                "Register receiver listener succeed!".logResult()
                                 radioButton.isChecked = true
                             }
                             .addOnFailureListener {
-                                printResultOnUIThread("Register receiver listener failed!")
+                                "Register receiver listener failed!".logError(it)
                                 radioButton.isChecked = false
-                                printResultOnUIThread("Click on get Devices button again")
                             }
                 } else {
                     radioButton.isChecked = false
-                    printResultOnUIThread("The device seems to be disconnected")
+                    "The device seems to be disconnected".logResult()
                 }
             } ?: run {
                 radioButton.isChecked = false
-                printResultOnUIThread("Click on get Devices button again")
+                "Click on get Devices button again".logResult()
             }
         }
     }
@@ -194,9 +185,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 else -> DashboardFragmentDirections.actionDashboardFragmentToPlayerFragment(device.uuid, localDataMessage.playerCommand
                         ?: LocalPlayerCommand.Play)
             }.let { findNavController().navigate(it) }
-        } ?: run {
-            printResultOnUIThread("No device selected, get available devices again")
-        }
+        } ?: run { "No device selected, get available devices again".logResult() }
     }
 
     private fun navigateTo(messageType: LocalMessageType) {
@@ -205,14 +194,31 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 Destination.Messaging -> DashboardFragmentDirections.actionDashboardFragmentToMessagingFragment(device.uuid)
                 else -> DashboardFragmentDirections.actionDashboardFragmentToPlayerFragment(device.uuid, LocalPlayerCommand.Play)
             }.let { findNavController().navigate(it) }
-        } ?: run {
-            printResultOnUIThread("No device selected, get available devices again")
-        }
+        } ?: run { "No device selected, get available devices again".logResult() }
     }
 
     private fun getDestination(messageType: LocalMessageType) = when (messageType) {
         LocalMessageType.PlayerCommand -> Destination.MediaPlayer
         else -> Destination.Messaging
+    }
+
+    private fun String.logResult() {
+        appendOnOutputView(this)
+        Timber.d(this)
+    }
+
+    private fun String.logError(exception: Exception) {
+        appendOnOutputView(this)
+        Timber.e(exception, this)
+    }
+
+    private fun appendOnOutputView(text: String) {
+        requireActivity().runOnUiThread {
+            binding.logOutputTextView.append(text + System.lineSeparator())
+            binding.logOutputTextView.post {
+                binding.scrollView.fullScroll(View.FOCUS_DOWN)
+            }
+        }
     }
 }
 
