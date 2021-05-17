@@ -1,10 +1,10 @@
 object AndroidSettings {
     const val appVersionName = "0.1"
     const val appVersionCode = 1
-    const val compileSdk = 29
-    const val buildTools = "29.0.3"
+    const val compileSdk = 30
+    const val buildTools = "30.0.2"
     const val minSdk = 23
-    const val targetSdk = 29
+    const val targetSdk = 30
 }
 
 object Versions {
@@ -12,11 +12,11 @@ object Versions {
     const val navigation = "2.3.0"
     const val constraintLayout = "2.0.4"
     const val fragmentKtx = "1.3.2"
-    const val gradle = "4.1.3"
+    const val gradle = "3.5.1"
     const val lifecycleLivedataKtx = "2.2.0-rc01"
     const val safeArgs = "2.3.5"
     const val kotlinxCoroutines = "1.4.2"
-    const val kotlin = "1.4.30"
+    const val kotlin = "1.4.0"
     const val agcp = "1.4.2.300"
     const val wearEngine = "5.0.1.301"
     const val hms = "5.0.5.300"
