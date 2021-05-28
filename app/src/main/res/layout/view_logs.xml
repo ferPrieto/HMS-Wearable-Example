@@ -6,8 +6,11 @@
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll_view"
+        android:visibility="gone"
+        tools:visibility="visible"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
         android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@+id/clear_logs">
 

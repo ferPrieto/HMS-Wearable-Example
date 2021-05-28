@@ -6,6 +6,15 @@
     android:layout_height="match_parent"
     tools:context=".ui.WearEngineMainActivity">
 
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/debug_mode_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/dashboard_toggle_text"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
     <RadioButton
         android:id="@+id/connected_device"
         android:layout_width="0dp"
@@ -61,10 +70,10 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="@string/messaging_clear_log"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/take_photo" />
-
 
     <include
         layout="@layout/view_logs"

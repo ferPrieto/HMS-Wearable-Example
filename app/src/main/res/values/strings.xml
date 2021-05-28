@@ -7,8 +7,11 @@
     <string name="dashboard_get_devices">Get Devices</string>
     <string name="dashboard_button_messaging">Messaging</string>
     <string name="dashboard_button_media_player">Media Player</string>
-    <string name="dashboard_available_devices_title">Available Devices</string>
+    <string name="dashboard_available_devices_title">Available Huawei Wearables:</string>
     <string name="dashboard_clear_log">Clear Logs</string>
+    <string name="dashboard_toggle_text">Debug Mode</string>
+    <string name="dashboard_toggle_enabled">Enabled</string>
+    <string name="dashboard_toggle_disabled">Disabled</string>
 
     <string name="receive_message">Receive Message</string>
     <string name="send_file">Send File</string>
@@ -20,7 +23,6 @@
     <string name="messaging_button_ping">Ping Device</string>
 
     <string name="player_clear_log">Clear Logs</string>
-
 
     <string name="cancel_receive_message">Cancel Receiver Message</string>
     <string name="log_output">Log output:</string>

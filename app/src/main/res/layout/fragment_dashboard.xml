@@ -44,6 +44,7 @@
         android:layout_marginTop="16dp"
         android:layout_weight="1"
         android:text="@string/dashboard_clear_log"
+        android:visibility="gone"
         android:textAllCaps="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -57,23 +58,29 @@
         android:orientation="vertical"
         app:layout_constraintTop_toBottomOf="@id/available_devices_title" />
 
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/debug_mode_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/dashboard_toggle_text"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
     <TextView
         android:id="@+id/available_devices_title"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/hi_wear_demo_margin_0dp"
-        android:layout_marginTop="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginTop="42dp"
         android:text="@string/dashboard_available_devices_title"
-        android:textAlignment="center"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:textAlignment="textStart"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <include
         layout="@layout/view_logs"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
+        android:layout_height="match_parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/clear_logs" />

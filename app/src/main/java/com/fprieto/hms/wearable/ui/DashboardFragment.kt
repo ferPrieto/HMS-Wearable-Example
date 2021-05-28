@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import androidx.core.view.children
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -81,6 +82,10 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         }
         binding.deviceRadioGroup.setOnCheckedChangeListener { radioGroup: RadioGroup, checkedId: Int ->
             selectRadioButton(radioGroup, checkedId)
+        }
+        binding.debugModeSwitch.setOnCheckedChangeListener { _, isChecked ->
+            viewLogsBinding.scrollView.isVisible = isChecked
+            binding.clearLogs.isVisible = isChecked
         }
     }
 

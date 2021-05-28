@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -97,7 +98,7 @@ class MessagingFragment : Fragment(R.layout.fragment_messaging) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         reSelectDevice()
-        initButtons()
+        initViews()
     }
 
     private fun reSelectDevice() {
@@ -129,7 +130,7 @@ class MessagingFragment : Fragment(R.layout.fragment_messaging) {
         return args.deviceUuid
     }
 
-    private fun initButtons() {
+    private fun initViews() {
         binding.clearLogs.setOnClickListener {
             viewLogsBinding.logOutputTextView.text = ""
         }
@@ -144,6 +145,11 @@ class MessagingFragment : Fragment(R.layout.fragment_messaging) {
 
         binding.takePhoto.setOnClickListener {
             requestTakePhotosPermissions.launch(TAKE_PHOTO_PERMISSIONS)
+        }
+
+        binding.debugModeSwitch.setOnCheckedChangeListener { _, isChecked ->
+            viewLogsBinding.scrollView.isVisible = isChecked
+            binding.clearLogs.isVisible = isChecked
         }
     }
 
