@@ -47,7 +47,11 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         HiWear.getDeviceClient(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         binding = FragmentDashboardBinding.inflate(inflater, container, false)
         viewLogsBinding = ViewLogsBinding.bind(binding.root)
         return binding.root
@@ -135,16 +139,15 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     }
 
     private fun checkSelectedDevice(): Device? =
-            binding.deviceRadioGroup.checkedRadioButtonId.let { buttonId ->
-                if (buttonId != 1) {
-                    (binding.deviceRadioGroup.findViewById<RadioButton>(buttonId)?.getTag(R.id.device_tag) as? String?)?.let { deviceUUId ->
-                        getDeviceFromUDID(deviceUUId)
-                    } ?: run { null }
-                } else null
-            }
+        binding.deviceRadioGroup.checkedRadioButtonId.let { buttonId ->
+            (binding.deviceRadioGroup.findViewById<RadioButton>(buttonId)
+                ?.getTag(R.id.device_tag) as? String?)?.let { deviceUUId ->
+                getDeviceFromUDID(deviceUUId)
+            } ?: run { null }
+        }
 
     private fun getDeviceFromUDID(uuid: String): Device? =
-            connectedDevices.firstOrNull { device -> device.uuid == uuid }
+        connectedDevices.firstOrNull { device -> device.uuid == uuid }
 
     private fun registerReceiver() = Receiver { message ->
         message?.let { msg ->
@@ -167,14 +170,14 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             device?.let {
                 if (device.isConnected) {
                     p2pClient.registerReceiver(device, receiver)
-                            .addOnSuccessListener {
-                                "Register receiver listener succeed!".logResult()
-                                radioButton.isChecked = true
-                            }
-                            .addOnFailureListener {
-                                "Register receiver listener failed!".logError(it)
-                                radioButton.isChecked = false
-                            }
+                        .addOnSuccessListener {
+                            "Register receiver listener succeed!".logResult()
+                            radioButton.isChecked = true
+                        }
+                        .addOnFailureListener {
+                            "Register receiver listener failed!".logError(it)
+                            radioButton.isChecked = false
+                        }
                 } else {
                     radioButton.isChecked = false
                     "The device seems to be disconnected".logResult()
@@ -189,9 +192,13 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     private fun navigateTo(localDataMessage: LocalDataMessage) {
         checkSelectedDevice()?.let { device ->
             when (getDestination(localDataMessage.messageType)) {
-                Destination.Messaging -> DashboardFragmentDirections.actionDashboardFragmentToMessagingFragment(device.uuid)
-                else -> DashboardFragmentDirections.actionDashboardFragmentToPlayerFragment(device.uuid, localDataMessage.playerCommand
-                        ?: LocalPlayerCommand.Play)
+                Destination.Messaging -> DashboardFragmentDirections.actionDashboardFragmentToMessagingFragment(
+                    device.uuid
+                )
+                else -> DashboardFragmentDirections.actionDashboardFragmentToPlayerFragment(
+                    device.uuid, localDataMessage.playerCommand
+                        ?: LocalPlayerCommand.Play
+                )
             }.let { findNavController().navigate(it) }
         } ?: run { "No device selected, get available devices again".logResult() }
     }
@@ -199,8 +206,13 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     private fun navigateTo(messageType: LocalMessageType) {
         checkSelectedDevice()?.let { device ->
             when (getDestination(messageType)) {
-                Destination.Messaging -> DashboardFragmentDirections.actionDashboardFragmentToMessagingFragment(device.uuid)
-                else -> DashboardFragmentDirections.actionDashboardFragmentToPlayerFragment(device.uuid, LocalPlayerCommand.Play)
+                Destination.Messaging -> DashboardFragmentDirections.actionDashboardFragmentToMessagingFragment(
+                    device.uuid
+                )
+                else -> DashboardFragmentDirections.actionDashboardFragmentToPlayerFragment(
+                    device.uuid,
+                    LocalPlayerCommand.Play
+                )
             }.let { findNavController().navigate(it) }
         } ?: run { "No device selected, get available devices again".logResult() }
     }
