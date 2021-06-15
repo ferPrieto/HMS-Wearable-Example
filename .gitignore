@@ -2,6 +2,7 @@ build
 app.iml
 local.properties
 *.keystore
+keystore/debug.keystore
 agconnect-services.json
 
 # IntelliJ
