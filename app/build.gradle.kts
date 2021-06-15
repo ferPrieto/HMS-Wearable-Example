@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -26,6 +28,9 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
         sourceCompatibility = JavaVersion.VERSION_1_8
     }
+    val peerPkgName: String = gradleLocalProperties(rootDir).getProperty("peerPkgName")
+    val peerFingerPrint: String = gradleLocalProperties(rootDir).getProperty("peerFingerprint")
+
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
@@ -38,14 +43,21 @@ android {
         getByName("debug") {
             signingConfig = signingConfigs.getByName("debug")
             isDebuggable = true
+            buildConfigField("String", "peerPkgName", peerPkgName)
+            buildConfigField("String", "peerFingerPrint", peerFingerPrint)
         }
     }
+
+    val keyAliasProperty: String = gradleLocalProperties(rootDir).getProperty("keyAlias")
+    val keyPasswordProperty: String = gradleLocalProperties(rootDir).getProperty("keyPassword")
+    val storePasswordProperty: String = gradleLocalProperties(rootDir).getProperty("storePassword")
+
     signingConfigs {
         getByName("debug") {
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
+            keyAlias = keyAliasProperty
+            keyPassword = keyPasswordProperty
             storeFile = file("../keystore/debug.keystore")
-            storePassword = "android"
+            storePassword = storePasswordProperty
         }
     }
 }
