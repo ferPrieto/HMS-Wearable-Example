@@ -1,4 +1,4 @@
-package com.fprieto.hms.wearable.ui
+package com.fprieto.hms.wearable.presentation.ui
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity

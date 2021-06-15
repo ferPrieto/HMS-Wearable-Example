@@ -23,6 +23,7 @@ object Versions {
     const val timber = "4.7.1"
     const val gson = "2.8.6"
     const val exoPlayer = "2.10.5"
+    const val dagger = "2.37"
 }
 
 object BuildDependencies {
@@ -85,6 +86,19 @@ object Dependencies {
     object ExoPlayer {
         const val core = "com.google.android.exoplayer:exoplayer-core:${Versions.exoPlayer}"
         const val ui = "com.google.android.exoplayer:exoplayer-ui:${Versions.exoPlayer}"
+    }
+
+    object Dagger {
+        const val dagger =
+            "com.google.dagger:dagger:${Versions.dagger}"
+        const val daggerAndroid =
+            "com.google.dagger:dagger-android:${Versions.dagger}"
+        const val daggerAndroidSupport =
+            "com.google.dagger:dagger-android-support:${Versions.dagger}"
+        const val daggerCompiler =
+            "com.google.dagger:dagger-compiler:${Versions.dagger}"
+        const val daggerAndroidProcessor =
+            "com.google.dagger:dagger-android-processor:${Versions.dagger}"
     }
 
     const val gson = "com.google.code.gson:gson:${Versions.gson}"

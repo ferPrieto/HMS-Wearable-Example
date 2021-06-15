@@ -19,17 +19,20 @@ android {
     }
     buildToolsVersion(AndroidSettings.buildTools)
     compileSdkVersion(AndroidSettings.compileSdk)
-    kotlinOptions{
+    kotlinOptions {
         jvmTarget = "1.8"
     }
-    compileOptions{
+    compileOptions {
         targetCompatibility = JavaVersion.VERSION_1_8
         sourceCompatibility = JavaVersion.VERSION_1_8
     }
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
             isDebuggable = false
         }
         getByName("debug") {
@@ -72,4 +75,9 @@ dependencies {
     implementation(Dependencies.timber)
 
     implementation(Dependencies.gson)
+
+    implementation(Dependencies.Dagger.daggerCompiler)
+    implementation(Dependencies.Dagger.daggerAndroid)
+    implementation(Dependencies.Dagger.daggerAndroidSupport)
+    annotationProcessor(Dependencies.Dagger.daggerAndroidProcessor)
 }

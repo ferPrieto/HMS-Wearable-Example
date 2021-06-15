@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/dashboardFragment"
-        android:name="com.fprieto.hms.wearable.ui.DashboardFragment">
+        android:name="com.fprieto.hms.wearable.presentation.ui.DashboardFragment">
         <action
             android:id="@+id/action_dashboardFragment_to_messagingFragment"
             app:destination="@id/messagingFragment"
@@ -30,7 +30,7 @@
 
     <fragment
         android:id="@+id/messagingFragment"
-        android:name="com.fprieto.hms.wearable.ui.MessagingFragment">
+        android:name="com.fprieto.hms.wearable.presentation.ui.MessagingFragment">
         <argument
             android:name="deviceUuid"
             app:argType="string" />
@@ -38,7 +38,7 @@
 
     <fragment
         android:id="@+id/playerFragment"
-        android:name="com.fprieto.hms.wearable.ui.PlayerFragment">
+        android:name="com.fprieto.hms.wearable.presentation.ui.PlayerFragment">
         <argument
             android:name="deviceUuid"
             app:argType="string" />
