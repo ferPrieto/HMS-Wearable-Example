@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -40,12 +42,15 @@ android {
             isDebuggable = true
         }
     }
+    val keyAlias: String = gradleLocalProperties(rootDir).getProperty("keyAlias")
+    val keyPassword: String = gradleLocalProperties(rootDir).getProperty("keyPassword")
+    val storePassword: String = gradleLocalProperties(rootDir).getProperty("storePassword")
     signingConfigs {
         getByName("debug") {
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
+            keyAlias = keyAlias
+            keyPassword = keyPassword
             storeFile = file("../keystore/debug.keystore")
-            storePassword = "android"
+            storePassword = storePassword
         }
     }
 }

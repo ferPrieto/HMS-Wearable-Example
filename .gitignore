@@ -1,3 +1,15 @@
 build
 app.iml
 local.properties
+*.keystore
+agconnect-services.json
+
+# IntelliJ
+*.iml
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/gradle.xml
+.idea/assetWizardSettings.xml
+.idea/dictionaries
+.idea/libraries
+.idea/caches
