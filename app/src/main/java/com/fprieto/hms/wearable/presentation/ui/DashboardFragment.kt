@@ -9,6 +9,8 @@ import android.widget.RadioGroup
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.fprieto.hms.wearable.R
@@ -16,19 +18,23 @@ import com.fprieto.hms.wearable.credentials.CredentialsProvider
 import com.fprieto.hms.wearable.databinding.FragmentDashboardBinding
 import com.fprieto.hms.wearable.databinding.ViewLogsBinding
 import com.fprieto.hms.wearable.extensions.await
-import com.fprieto.hms.wearable.model.local.LocalDataMessage
 import com.fprieto.hms.wearable.model.local.LocalMessageType
-import com.fprieto.hms.wearable.model.local.LocalPlayerCommand
+import com.fprieto.hms.wearable.presentation.vm.DashboardViewModel
+import com.fprieto.hms.wearable.presentation.vm.observeEvent
 import com.huawei.wearengine.HiWear
 import com.huawei.wearengine.device.Device
 import com.huawei.wearengine.device.DeviceClient
-import com.huawei.wearengine.p2p.Message
 import com.huawei.wearengine.p2p.P2pClient
 import com.huawei.wearengine.p2p.Receiver
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
-class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
+class DashboardFragment @Inject constructor(
+    viewModelFactory: ViewModelProvider.Factory
+) : Fragment(R.layout.fragment_dashboard) {
+
+    private val viewModel by viewModels<DashboardViewModel> { viewModelFactory }
 
     private lateinit var binding: FragmentDashboardBinding
     private lateinit var viewLogsBinding: ViewLogsBinding
@@ -65,6 +71,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initViews()
+        setViewModelObservers()
     }
 
     private fun initViews() {
@@ -77,11 +84,11 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         }
 
         binding.messaging.setOnClickListener {
-            navigateTo(LocalMessageType.TextMessage)
+            viewModel.getNavigationDestination(null, LocalMessageType.TextMessage)
         }
 
         binding.mediaPlayer.setOnClickListener {
-            navigateTo(LocalMessageType.PlayerCommand)
+            viewModel.getNavigationDestination(null, LocalMessageType.PlayerCommand)
         }
         binding.deviceRadioGroup.setOnCheckedChangeListener { radioGroup: RadioGroup, checkedId: Int ->
             selectRadioButton(radioGroup, checkedId)
@@ -150,17 +157,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
     private fun registerReceiver() = Receiver { message ->
         message?.let { msg ->
-            when (msg.type) {
-                Message.MESSAGE_TYPE_DATA -> {
-                    "Received Text Message: $msg.data".logResult()
-                    navigateTo(msg.toLocalData())
-                }
-                Message.MESSAGE_TYPE_FILE -> {
-                    "Received file".logResult()
-                    navigateTo(msg.toLocalData())
-                }
-                Message.MESSAGE_TYPE_DEFAULT -> "Received default message".logResult()
-            }
+            viewModel.getNavigationDestination(msg, null)
         } ?: run { "Failed to manage the message on Dashboard".logResult() }
     }
 
@@ -188,32 +185,23 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         }
     }
 
-    private fun navigateTo(localDataMessage: LocalDataMessage) {
-        checkSelectedDevice()?.let { device ->
-            when (getDestination(localDataMessage.messageType)) {
-                Destination.Messaging -> DashboardFragmentDirections.actionDashboardFragmentToMessagingFragment(
-                    device.uuid
-                )
-                else -> DashboardFragmentDirections.actionDashboardFragmentToPlayerFragment(
-                    device.uuid, localDataMessage.playerCommand
-                        ?: LocalPlayerCommand.Play
-                )
-            }.let { findNavController().navigate(it) }
-        } ?: run { "No device selected, get available devices again".logResult() }
-    }
+    private fun setViewModelObservers() {
+        viewModel.navigateToMessaging.observeEvent(this) {
+            checkSelectedDevice()?.let { device ->
+                val direction =
+                    DashboardFragmentDirections.actionDashboardFragmentToMessagingFragment(device.uuid)
+                findNavController().navigate(direction)
+            } ?: run { "No device selected, get available devices again".logResult() }
+        }
 
-    private fun navigateTo(messageType: LocalMessageType) {
-        checkSelectedDevice()?.let { device ->
-            when (getDestination(messageType)) {
-                Destination.Messaging -> DashboardFragmentDirections.actionDashboardFragmentToMessagingFragment(
-                    device.uuid
+        viewModel.navigateToPlayer.observeEvent(this) { playerCommand ->
+            checkSelectedDevice()?.let { device ->
+                val direction = DashboardFragmentDirections.actionDashboardFragmentToPlayerFragment(
+                    device.uuid, playerCommand
                 )
-                else -> DashboardFragmentDirections.actionDashboardFragmentToPlayerFragment(
-                    device.uuid,
-                    LocalPlayerCommand.Play
-                )
-            }.let { findNavController().navigate(it) }
-        } ?: run { "No device selected, get available devices again".logResult() }
+                findNavController().navigate(direction)
+            } ?: run { "No device selected, get available devices again".logResult() }
+        }
     }
 
     private fun getDestination(messageType: LocalMessageType) = when (messageType) {
