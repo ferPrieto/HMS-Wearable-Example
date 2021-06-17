@@ -5,6 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -14,10 +16,9 @@ import com.fprieto.hms.wearable.credentials.CredentialsProvider
 import com.fprieto.hms.wearable.databinding.FragmentPlayerBinding
 import com.fprieto.hms.wearable.databinding.ViewLogsBinding
 import com.fprieto.hms.wearable.extensions.await
-import com.fprieto.hms.wearable.extensions.toLocalData
-import com.fprieto.hms.wearable.model.local.LocalMessageType
-import com.fprieto.hms.wearable.model.local.LocalPlayerCommand
 import com.fprieto.hms.wearable.player.VideoPlayerState
+import com.fprieto.hms.wearable.presentation.vm.PlayerViewModel
+import com.fprieto.hms.wearable.presentation.vm.observeEvent
 import com.huawei.wearengine.HiWear
 import com.huawei.wearengine.device.Device
 import com.huawei.wearengine.device.DeviceClient
@@ -26,11 +27,17 @@ import com.huawei.wearengine.p2p.P2pClient
 import com.huawei.wearengine.p2p.Receiver
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 private const val PLAYER_STATE_KEY: String = "PLAYER_STATE_KEY"
-private const val VIDEO_URL: String = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+private const val VIDEO_URL: String =
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
 
-class PlayerFragment : Fragment(R.layout.fragment_player) {
+class PlayerFragment @Inject constructor(
+    viewModelFactory: ViewModelProvider.Factory
+) : Fragment(R.layout.fragment_player) {
+
+    private val viewModel by viewModels<PlayerViewModel> { viewModelFactory }
 
     private lateinit var binding: FragmentPlayerBinding
     private lateinit var viewLogsBinding: ViewLogsBinding
@@ -75,7 +82,11 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
         registerReceivers()
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         binding = FragmentPlayerBinding.inflate(inflater, container, false)
         viewLogsBinding = ViewLogsBinding.bind(binding.root)
         return binding.root
@@ -87,6 +98,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
         initButtons()
         getLatestPlayerState(savedInstanceState)
         renderVideo()
+        setViewModelObservers()
     }
 
     private fun reSelectDevice() {
@@ -122,9 +134,9 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
 
     private fun getLatestPlayerState(bundle: Bundle?) {
         bundle?.getParcelable<VideoPlayerState>(PLAYER_STATE_KEY)
-                ?.let { state ->
-                    playerState = state
-                }
+            ?.let { state ->
+                playerState = state
+            }
     }
 
     private fun renderVideo() {
@@ -133,13 +145,32 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
         binding.videoPlayer.prepareToPlay(this, playerState)
     }
 
+    private fun setViewModelObservers() {
+        viewModel.playVideo.observeEvent(this) {
+            binding.videoPlayer.play()
+            "Play Command Selected".logResult()
+        }
+        viewModel.pauseVideo.observeEvent(this) {
+            binding.videoPlayer.pause()
+            "Pause Command Selected".logResult()
+        }
+        viewModel.rewindVideo.observeEvent(this) {
+            binding.videoPlayer.rewind()
+            "Rewind Command Selected".logResult()
+        }
+        viewModel.fastForwardVideo.observeEvent(this) {
+            binding.videoPlayer.fastForward()
+            "FastForward Command Selected".logResult()
+        }
+    }
+
     private fun registerReceivers() {
         val receiver = Receiver { message ->
-            message?.let { msg ->
-                when (msg.type) {
+            message?.let { message ->
+                when (message.type) {
                     Message.MESSAGE_TYPE_DATA -> {
                         "Received data".logResult()
-                        managePlayerCommands(msg)
+                        viewModel.manageReceivedMessage(message)
                     }
                     Message.MESSAGE_TYPE_FILE -> "Received file".logResult()
 
@@ -150,33 +181,8 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
             }
         }
         p2pClient.registerReceiver(selectedDevice, receiver)
-                .addOnSuccessListener { "Register receiver listener succeed!".logResult() }
-                .addOnFailureListener { "Register receiver listener failed!".logError(it) }
-    }
-
-    private fun managePlayerCommands(message: Message) {
-        message.toLocalData().let { dataMessage ->
-            if (dataMessage.messageType == LocalMessageType.PlayerCommand) {
-                when (dataMessage.playerCommand) {
-                    LocalPlayerCommand.Play -> {
-                        binding.videoPlayer.play()
-                        "Play Command Selected".logResult()
-                    }
-                    LocalPlayerCommand.Pause -> {
-                        binding.videoPlayer.pause()
-                        "Pause Command Selected".logResult()
-                    }
-                    LocalPlayerCommand.Rewind -> {
-                        binding.videoPlayer.rewind()
-                        "Rewind Command Selected".logResult()
-                    }
-                    else -> {
-                        binding.videoPlayer.fastForward()
-                        "FastForward Command Selected".logResult()
-                    }
-                }
-            }
-        }
+            .addOnSuccessListener { "Register receiver listener succeed!".logResult() }
+            .addOnFailureListener { "Register receiver listener failed!".logError(it) }
     }
 
     private fun String.logResult() {

@@ -16,7 +16,6 @@ import com.fprieto.hms.wearable.credentials.CredentialsProvider
 import com.fprieto.hms.wearable.databinding.FragmentDashboardBinding
 import com.fprieto.hms.wearable.databinding.ViewLogsBinding
 import com.fprieto.hms.wearable.extensions.await
-import com.fprieto.hms.wearable.extensions.toLocalData
 import com.fprieto.hms.wearable.model.local.LocalDataMessage
 import com.fprieto.hms.wearable.model.local.LocalMessageType
 import com.fprieto.hms.wearable.model.local.LocalPlayerCommand
@@ -142,11 +141,11 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         binding.deviceRadioGroup.checkedRadioButtonId.let { buttonId ->
             (binding.deviceRadioGroup.findViewById<RadioButton>(buttonId)
                 ?.getTag(R.id.device_tag) as? String?)?.let { deviceUUId ->
-                getDeviceFromUDID(deviceUUId)
+                getDeviceByUUID(deviceUUId)
             } ?: run { null }
         }
 
-    private fun getDeviceFromUDID(uuid: String): Device? =
+    private fun getDeviceByUUID(uuid: String): Device? =
         connectedDevices.firstOrNull { device -> device.uuid == uuid }
 
     private fun registerReceiver() = Receiver { message ->
