@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -34,10 +35,13 @@ import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
 import java.util.*
+import javax.inject.Inject
 
 private val TAKE_PHOTO_PERMISSIONS = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA)
 
-class MessagingFragment : Fragment(R.layout.fragment_messaging) {
+class MessagingFragment @Inject constructor(
+    viewModelFactory: ViewModelProvider.Factory
+): Fragment(R.layout.fragment_messaging) {
 
     private lateinit var binding: FragmentMessagingBinding
     private lateinit var viewLogsBinding: ViewLogsBinding
