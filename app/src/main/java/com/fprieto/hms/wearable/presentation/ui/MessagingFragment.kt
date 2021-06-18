@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -20,6 +21,8 @@ import com.fprieto.hms.wearable.credentials.CredentialsProvider
 import com.fprieto.hms.wearable.databinding.FragmentMessagingBinding
 import com.fprieto.hms.wearable.databinding.ViewLogsBinding
 import com.fprieto.hms.wearable.extensions.await
+import com.fprieto.hms.wearable.presentation.vm.MessagingViewModel
+import com.fprieto.hms.wearable.presentation.vm.observeEvent
 import com.huawei.wearengine.HiWear
 import com.huawei.wearengine.device.Device
 import com.huawei.wearengine.device.DeviceClient
@@ -37,11 +40,14 @@ import java.io.FileOutputStream
 import java.util.*
 import javax.inject.Inject
 
-private val TAKE_PHOTO_PERMISSIONS = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA)
+private val TAKE_PHOTO_PERMISSIONS =
+    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA)
 
 class MessagingFragment @Inject constructor(
     viewModelFactory: ViewModelProvider.Factory
-): Fragment(R.layout.fragment_messaging) {
+) : Fragment(R.layout.fragment_messaging) {
+
+    private val viewModel by viewModels<MessagingViewModel> { viewModelFactory }
 
     private lateinit var binding: FragmentMessagingBinding
     private lateinit var viewLogsBinding: ViewLogsBinding
@@ -60,18 +66,26 @@ class MessagingFragment @Inject constructor(
         binding.connectedDevice.isChecked = true
     }
 
-    private val requestTakePhotosPermissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-        if (permissions.entries.all { true }) {
-            takePicture.launch(null)
+    private val requestTakePhotosPermissions =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            if (permissions.entries.all { true }) {
+                takePicture.launch(null)
+            }
         }
-    }
 
-    private val takePicture = registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
-        File.createTempFile("temp", ".jpg", requireActivity().cacheDir).let { file ->
-            FileOutputStream(file).use { out -> bitmap.compress(Bitmap.CompressFormat.PNG, 100, out) }
-            sendFile(file)
+    private val takePicture =
+        registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
+            File.createTempFile("temp", ".jpg", requireActivity().cacheDir).let { file ->
+                FileOutputStream(file).use { out ->
+                    bitmap.compress(
+                        Bitmap.CompressFormat.PNG,
+                        100,
+                        out
+                    )
+                }
+                sendFile(file)
+            }
         }
-    }
 
     private val p2pClient: P2pClient by lazy {
         HiWear.getP2pClient(context).apply {
@@ -93,7 +107,11 @@ class MessagingFragment @Inject constructor(
         registerReceiver()
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         binding = FragmentMessagingBinding.inflate(inflater, container, false)
         viewLogsBinding = ViewLogsBinding.bind(binding.root)
         return binding.root
@@ -103,6 +121,7 @@ class MessagingFragment @Inject constructor(
         super.onViewCreated(view, savedInstanceState)
         reSelectDevice()
         initViews()
+        setViewModelObservers()
     }
 
     private fun reSelectDevice() {
@@ -111,7 +130,11 @@ class MessagingFragment @Inject constructor(
                 try {
                     deviceClient.bondedDevices.await().let { devices ->
                         if (devices.isNullOrEmpty()) {
-                            Toast.makeText(context, "The device selected is unavailable", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "The device selected is unavailable",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             Timber.e("The device selected is unavailable")
                             findNavController().navigateUp()
                             return@launch
@@ -121,7 +144,8 @@ class MessagingFragment @Inject constructor(
                         }
                     }
                 } catch (e: Exception) {
-                    Toast.makeText(context, "Error getting available devices", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Error getting available devices", Toast.LENGTH_SHORT)
+                        .show()
                     Timber.e(e, "Error getting available devices: ${e.message}")
                     findNavController().navigateUp()
                 }
@@ -136,24 +160,23 @@ class MessagingFragment @Inject constructor(
 
     private fun initViews() {
         binding.clearLogs.setOnClickListener {
-            viewLogsBinding.logOutputTextView.text = ""
+            viewModel.clearLogs()
         }
 
         binding.pingDevice.setOnClickListener {
-            pingSelectedDevice()
+            viewModel.pingDevice()
         }
 
         binding.sendMessage.setOnClickListener {
-            sendMessage("Hi from Huawei Phone! Time: ${System.currentTimeMillis()}ms")
+            viewModel.sendMessage()
         }
 
         binding.takePhoto.setOnClickListener {
-            requestTakePhotosPermissions.launch(TAKE_PHOTO_PERMISSIONS)
+            viewModel.takePhoto()
         }
 
         binding.debugModeSwitch.setOnCheckedChangeListener { _, isChecked ->
-            viewLogsBinding.scrollView.isVisible = isChecked
-            binding.clearLogs.isVisible = isChecked
+            viewModel.setDebugMode(isChecked)
         }
     }
 
@@ -171,9 +194,35 @@ class MessagingFragment @Inject constructor(
         }.addOnSuccessListener {
             "Pinged ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} succeed".logResult()
         }.addOnFailureListener { exception ->
-            "Ping ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} failed".logError(exception)
+            "Ping ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} failed".logError(
+                exception
+            )
         }
     }
+
+    private fun setViewModelObservers() {
+        viewModel.clearLogs.observeEvent(this) {
+            viewLogsBinding.logOutputTextView.text = ""
+        }
+
+        viewModel.pingDevice.observeEvent(this) {
+            pingSelectedDevice()
+        }
+
+        viewModel.sendMessage.observeEvent(this) {
+            sendMessage("Hi from Huawei Phone! Time: ${System.currentTimeMillis()}ms")
+        }
+
+        viewModel.takePhoto.observeEvent(this) {
+            requestTakePhotosPermissions.launch(TAKE_PHOTO_PERMISSIONS)
+        }
+
+        viewModel.setDebugMode.observeEvent(this) { isChecked ->
+            viewLogsBinding.scrollView.isVisible = isChecked
+            binding.clearLogs.isVisible = isChecked
+        }
+    }
+
 
     private fun sendMessage(text: String) {
         if (selectedDevice?.isConnected == true) {
@@ -198,14 +247,14 @@ class MessagingFragment @Inject constructor(
 
     private fun buildMessageAndSend(text: String) {
         Message.Builder()
-                .setPayload(text.toByteArray())
-                .build().let { message ->
-                    p2pClient.send(selectedDevice, message, sendCallback).addOnSuccessListener {
-                        "Sent message to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()}".logResult()
-                    }.addOnFailureListener {
-                        "Send message to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} failed".logResult()
-                    }
+            .setPayload(text.toByteArray())
+            .build().let { message ->
+                p2pClient.send(selectedDevice, message, sendCallback).addOnSuccessListener {
+                    "Sent message to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()}".logResult()
+                }.addOnFailureListener {
+                    "Send message to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} failed".logResult()
                 }
+            }
     }
 
     private fun sendFile(file: File) {
@@ -218,14 +267,14 @@ class MessagingFragment @Inject constructor(
 
     private fun buildFileMessageBuilderAndSend(file: File, sendCallback: SendCallback) {
         Message.Builder()
-                .setPayload(file)
-                .build().let { message ->
-                    p2pClient.send(selectedDevice, message, sendCallback).addOnSuccessListener {
-                        "Sent file to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()}".logResult()
-                    }.addOnFailureListener {
-                        "Send file to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} failed".logResult()
-                    }
+            .setPayload(file)
+            .build().let { message ->
+                p2pClient.send(selectedDevice, message, sendCallback).addOnSuccessListener {
+                    "Sent file to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()}".logResult()
+                }.addOnFailureListener {
+                    "Send file to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} failed".logResult()
                 }
+            }
     }
 
     private fun registerReceiver() {
@@ -239,22 +288,29 @@ class MessagingFragment @Inject constructor(
             }
         }
         p2pClient.registerReceiver(selectedDevice, receiver)
-                .addOnSuccessListener {
-                    "Register receiver listener succeed!".logResult()
-                    initResultCallbackAndSender()
-                }
-                .addOnFailureListener { "Register receiver listener failed!".logResult() }
+            .addOnSuccessListener {
+                "Register receiver listener succeed!".logResult()
+                initResultCallbackAndSender()
+            }
+            .addOnFailureListener { "Register receiver listener failed!".logResult() }
     }
 
     private fun displayNotificationOnWearable(title: String, text: String) {
         if (selectedDevice?.isConnected == true) {
             val notification = Notification.Builder()
-                    .setPackageName(credentialsProvider.getPeerPkgName())
-                    .setTemplateId(NotificationTemplate.NOTIFICATION_TEMPLATE_ONE_BUTTON)
-                    .setButtonContents(hashMapOf(Pair(NotificationConstants.BUTTON_ONE_CONTENT_KEY, "Okay")))
-                    .setTitle(title)
-                    .setText(text)
-                    .build()
+                .setPackageName(credentialsProvider.getPeerPkgName())
+                .setTemplateId(NotificationTemplate.NOTIFICATION_TEMPLATE_ONE_BUTTON)
+                .setButtonContents(
+                    hashMapOf(
+                        Pair(
+                            NotificationConstants.BUTTON_ONE_CONTENT_KEY,
+                            "Okay"
+                        )
+                    )
+                )
+                .setTitle(title)
+                .setText(text)
+                .build()
 
             HiWear.getNotifyClient(context).let { client ->
                 client.notify(selectedDevice, notification).addOnSuccessListener {
