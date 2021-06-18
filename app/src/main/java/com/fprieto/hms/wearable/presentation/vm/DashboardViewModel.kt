@@ -20,6 +20,7 @@ abstract class DashboardViewModel : ViewModel() {
 class DashboardViewModelImpl @Inject constructor(
     private val remoteDataMessageMapper: RemoteDataMessageToLocalMapper
 ) : DashboardViewModel() {
+
     private val _navigateToMessaging = MediatorLiveData<Event<Unit>>()
     private val _navigateToPlayer = MediatorLiveData<Event<LocalPlayerCommand>>()
 

@@ -27,7 +27,6 @@ class PlayerViewModelImpl @Inject constructor(
     private val _rewindVideo = MediatorLiveData<Event<Unit>>()
     private val _fastForwardVideo = MediatorLiveData<Event<Unit>>()
 
-
     override val playVideo: LiveData<Event<Unit>>
         get() = _playVideo
 
