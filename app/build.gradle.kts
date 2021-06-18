@@ -95,4 +95,12 @@ dependencies {
     implementation(Dependencies.Dagger.daggerAndroid)
     implementation(Dependencies.Dagger.daggerAndroidSupport)
     kapt(Dependencies.Dagger.daggerAndroidProcessor)
+
+    testImplementation(TestDependencies.livedataTesting)
+    testImplementation(TestDependencies.JUnit.junit)
+    testImplementation(TestDependencies.JUnit.junitPlatformRunner)
+    testImplementation(TestDependencies.Mockito.mockitoCore)
+    testImplementation(TestDependencies.Mockito.mockitoInline)
+    testImplementation(TestDependencies.Mockito.mockitoKotlin)
+    testImplementation(TestDependencies.AndroidX.coreTesting)
 }
