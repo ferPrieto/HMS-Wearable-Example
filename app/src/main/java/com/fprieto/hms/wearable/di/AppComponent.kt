@@ -1,6 +1,8 @@
 package com.fprieto.hms.wearable.di
 
 import com.fprieto.hms.wearable.App
+import com.fprieto.hms.wearable.presentation.mapper.di.MapperModule
+import com.fprieto.hms.wearable.presentation.ui.di.FragmentBindingModule
 import com.fprieto.hms.wearable.presentation.ui.di.WearEngineMainActivityModule
 import com.fprieto.hms.wearable.presentation.vm.di.ViewModelBindingModule
 import dagger.Component
@@ -12,8 +14,10 @@ import javax.inject.Singleton
     modules = [
         AndroidSupportInjectionModule::class,
         AppModule::class,
+        FragmentBindingModule::class,
         WearEngineMainActivityModule::class,
-        ViewModelBindingModule::class
+        ViewModelBindingModule::class,
+        MapperModule::class
     ]
 )
 @Singleton

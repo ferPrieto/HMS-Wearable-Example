@@ -6,6 +6,7 @@ plugins {
     id("com.huawei.agconnect")
     id("androidx.navigation.safeargs")
     id("kotlin-parcelize")
+    id("kotlin-kapt")
 }
 
 android {
@@ -63,6 +64,8 @@ android {
 }
 
 dependencies {
+    fun kapt(definition: Any) = "kapt"(definition)
+
     implementation(Dependencies.AndroidX.fragmentKtx)
     implementation(Dependencies.AndroidX.lifecycleLivedataKtx)
     annotationProcessor(Dependencies.AndroidX.lifecycleCompiler)
@@ -88,8 +91,8 @@ dependencies {
 
     implementation(Dependencies.gson)
 
-    implementation(Dependencies.Dagger.daggerCompiler)
+    kapt(Dependencies.Dagger.daggerCompiler)
     implementation(Dependencies.Dagger.daggerAndroid)
     implementation(Dependencies.Dagger.daggerAndroidSupport)
-    annotationProcessor(Dependencies.Dagger.daggerAndroidProcessor)
+    kapt(Dependencies.Dagger.daggerAndroidProcessor)
 }

@@ -3,7 +3,7 @@ package com.fprieto.hms.wearable.presentation.vm
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
-import com.fprieto.hms.wearable.mapper.RemoteDataMessageToLocalMapper
+import com.fprieto.hms.wearable.presentation.mapper.RemoteDataMessageToLocalMapper
 import com.fprieto.hms.wearable.model.local.LocalMessageType
 import com.fprieto.hms.wearable.model.local.LocalPlayerCommand
 import com.fprieto.hms.wearable.presentation.ui.Destination
