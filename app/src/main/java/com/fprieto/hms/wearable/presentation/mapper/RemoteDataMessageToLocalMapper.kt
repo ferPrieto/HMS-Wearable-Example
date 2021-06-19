@@ -35,7 +35,7 @@ class RemoteDataMessageToLocalMapperImpl @Inject constructor() :
         dataMessage.playerCommand?.let { remotePlayerCommand ->
             when (remotePlayerCommand.command.toLowerCase()) {
                 "play" -> LocalPlayerCommand.Play
-                "stop" -> LocalPlayerCommand.Pause
+                "pause" -> LocalPlayerCommand.Pause
                 "rewind" -> LocalPlayerCommand.Rewind
                 else -> LocalPlayerCommand.FastForward
             }
