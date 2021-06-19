@@ -80,7 +80,6 @@ object Dependencies {
         const val jdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.kotlin}"
         const val coroutines =
             "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}"
-
         const val android =
             "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.kotlinxCoroutines}"
     }
@@ -118,14 +117,16 @@ object TestDependencies {
             "android.arch.core:core-testing:${TestVersions.coreTesting}"
     }
 
+    const val kotlinxCoroutines =
+        "org.jetbrains.kotlinx:kotlinx-coroutines-test:${Versions.kotlinxCoroutines}"
+    const val livedataTesting =
+        "com.jraska.livedata:testing-ktx:${TestVersions.livedataTesting}"
+
     object JUnit {
         const val junit = "junit:junit:${TestVersions.junit}"
         const val junitPlatformRunner =
             "org.junit.platform:junit-platform-runner:${TestVersions.junitPlatformRunner}"
     }
-
-    const val livedataTesting =
-        "com.jraska.livedata:testing-ktx:${TestVersions.livedataTesting}"
 
     object Mockito {
         const val mockitoCore = "org.mockito:mockito-core:${TestVersions.mockito}"

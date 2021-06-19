@@ -101,6 +101,7 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testImplementation(TestDependencies.livedataTesting)
+    testImplementation(TestDependencies.kotlinxCoroutines)
     testImplementation(TestDependencies.JUnit.junit)
     testImplementation(TestDependencies.JUnit.junitPlatformRunner)
     testImplementation(TestDependencies.Mockito.mockitoCore)
