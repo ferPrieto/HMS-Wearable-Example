@@ -12,6 +12,7 @@ import com.nhaarman.mockito_kotlin.whenever
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.setMain
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -20,27 +21,27 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
 import java.nio.charset.StandardCharsets
-import kotlin.test.assertEquals
 
 @RunWith(MockitoJUnitRunner::class)
-class DashboardViewModelImplTest {
+class PlayerViewModelImplTest {
 
-    private lateinit var cut: DashboardViewModel
+    private lateinit var cut: PlayerViewModel
 
     @Mock
     lateinit var remoteDataMessageToLocalMapper: RemoteDataMessageToLocalMapper
 
+
     @Before
     fun setUp() {
         Dispatchers.setMain(Dispatchers.Unconfined)
-        cut = DashboardViewModelImpl(remoteDataMessageToLocalMapper)
+        cut = PlayerViewModelImpl(remoteDataMessageToLocalMapper)
     }
 
     @get:Rule
     var rule: TestRule = InstantTaskExecutorRule()
 
     @Test
-    fun `Given message When getNavigationDestination then navigateToPlayer invoked with expected result`() {
+    fun `Given message When manageReceivedMessage then pauseVideo invoked with expected result`() {
         runBlocking {
             // Given
             val message =
@@ -54,14 +55,14 @@ class DashboardViewModelImplTest {
                 localDataMessage
             )
 
-            val expected = localDataMessage.playerCommand
-            val navigateToPlayerObserver = mock<Observer<Event<LocalPlayerCommand>>>()
+            val expected = Unit
+            val pauseVideoObserver = mock<Observer<Event<Unit>>>()
 
-            cut.navigateToPlayer.observeForever(navigateToPlayerObserver)
+            cut.pauseVideo.observeForever(pauseVideoObserver)
 
             // When
-            cut.getNavigationDestination(message, null)
-            val actualValue = cut.navigateToPlayer.value?.peekContent()
+            cut.manageReceivedMessage(message)
+            val actualValue = cut.pauseVideo.value?.peekContent()
 
             // Then
             assertEquals(expected, actualValue)
@@ -69,28 +70,28 @@ class DashboardViewModelImplTest {
     }
 
     @Test
-    fun `Given message When getNavigationDestination then navigateToMessaging invoked with expected result`() {
+    fun `Given message When manageReceivedMessage then fastForwardVideo invoked with expected result`() {
         runBlocking {
             // Given
             val message =
-                buildMessage("{\"messageType\":\"Text-Message\",\"plainMessage\":\"Some text message\" }")
+                buildMessage("{\"messageType\":\"Player-Command\",\"playerCommand\":{\"command\":\"fastForward\" }}")
             val localDataMessage = LocalDataMessage(
-                LocalMessageType.TextMessage,
-                null,
-                "Some text message"
+                LocalMessageType.PlayerCommand,
+                LocalPlayerCommand.FastForward,
+                null
             )
             whenever(remoteDataMessageToLocalMapper.toLocalDataMessage(message)).thenReturn(
                 localDataMessage
             )
 
             val expected = Unit
-            val navigateToMessagingObserver = mock<Observer<Event<Unit>>>()
+            val fastForwardVideoObserver = mock<Observer<Event<Unit>>>()
 
-            cut.navigateToMessaging.observeForever(navigateToMessagingObserver)
+            cut.fastForwardVideo.observeForever(fastForwardVideoObserver)
 
             // When
-            cut.getNavigationDestination(message, null)
-            val actualValue = cut.navigateToMessaging.value?.peekContent()
+            cut.manageReceivedMessage(message)
+            val actualValue = cut.fastForwardVideo.value?.peekContent()
 
             // Then
             assertEquals(expected, actualValue)
