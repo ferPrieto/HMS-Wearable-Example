@@ -65,6 +65,9 @@ android {
 
 dependencies {
     fun kapt(definition: Any) = "kapt"(definition)
+    fun implementation(definition: Any) = "implementation"(definition)
+    fun testImplementation(definition: Any) = "testImplementation"(definition)
+    fun androidTestImplementation(definition: Any) = "androidTestImplementation"(definition)
 
     implementation(Dependencies.AndroidX.fragmentKtx)
     implementation(Dependencies.AndroidX.lifecycleLivedataKtx)
@@ -96,6 +99,7 @@ dependencies {
     implementation(Dependencies.Dagger.daggerAndroidSupport)
     kapt(Dependencies.Dagger.daggerAndroidProcessor)
 
+    testImplementation(kotlin("test"))
     testImplementation(TestDependencies.livedataTesting)
     testImplementation(TestDependencies.JUnit.junit)
     testImplementation(TestDependencies.JUnit.junitPlatformRunner)
@@ -103,4 +107,5 @@ dependencies {
     testImplementation(TestDependencies.Mockito.mockitoInline)
     testImplementation(TestDependencies.Mockito.mockitoKotlin)
     testImplementation(TestDependencies.AndroidX.coreTesting)
+    testImplementation(TestDependencies.AndroidX.junit)
 }

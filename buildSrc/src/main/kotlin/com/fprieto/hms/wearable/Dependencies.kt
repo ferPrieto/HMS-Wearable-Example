@@ -12,7 +12,7 @@ object Versions {
     const val navigation = "2.3.0"
     const val constraintLayout = "2.0.4"
     const val fragmentKtx = "1.3.2"
-    const val lifecycleLivedataKtx = "2.3.1"
+    const val lifecycleLivedataKtx = "2.2.0"
     const val gradle = "3.5.1"
     const val safeArgs = "2.3.5"
     const val kotlinxCoroutines = "1.4.2"
@@ -30,7 +30,7 @@ object TestVersions {
     const val junit = "4.13.2"
     const val junitPlatformRunner = "1.7.2"
     const val mockito = "3.11.1"
-    const val mockitoKotlin = "3.2.0"
+    const val mockitoKotlin = "1.5.0"
     const val livedataTesting = "1.2.0"
     const val androidxJunit = "1.1.1"
     const val coreTesting = "1.1.1"
@@ -72,15 +72,12 @@ object Dependencies {
         object Navigation {
             const val fragmentKtx =
                 "androidx.navigation:navigation-fragment-ktx:${Versions.navigation}"
-            const val uiKtx =
-                "androidx.navigation:navigation-ui-ktx:${Versions.navigation}"
-
+            const val uiKtx = "androidx.navigation:navigation-ui-ktx:${Versions.navigation}"
         }
     }
 
     object Kotlin {
-        const val jdk8 =
-            "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.kotlin}"
+        const val jdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.kotlin}"
         const val coroutines =
             "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinxCoroutines}"
 
@@ -99,14 +96,11 @@ object Dependencies {
     }
 
     object Dagger {
-        const val dagger =
-            "com.google.dagger:dagger:${Versions.dagger}"
-        const val daggerAndroid =
-            "com.google.dagger:dagger-android:${Versions.dagger}"
+        const val dagger = "com.google.dagger:dagger:${Versions.dagger}"
+        const val daggerAndroid = "com.google.dagger:dagger-android:${Versions.dagger}"
         const val daggerAndroidSupport =
             "com.google.dagger:dagger-android-support:${Versions.dagger}"
-        const val daggerCompiler =
-            "com.google.dagger:dagger-compiler:${Versions.dagger}"
+        const val daggerCompiler = "com.google.dagger:dagger-compiler:${Versions.dagger}"
         const val daggerAndroidProcessor =
             "com.google.dagger:dagger-android-processor:${Versions.dagger}"
     }
@@ -125,8 +119,7 @@ object TestDependencies {
     }
 
     object JUnit {
-        const val junit =
-            "junit:junit:${TestVersions.junit}"
+        const val junit = "junit:junit:${TestVersions.junit}"
         const val junitPlatformRunner =
             "org.junit.platform:junit-platform-runner:${TestVersions.junitPlatformRunner}"
     }
@@ -135,11 +128,8 @@ object TestDependencies {
         "com.jraska.livedata:testing-ktx:${TestVersions.livedataTesting}"
 
     object Mockito {
-        const val mockitoCore =
-            "org.mockito:mockito-core:${TestVersions.mockito}"
-        const val mockitoInline =
-            "org.mockito:mockito-inline:${TestVersions.mockito}"
-        const val mockitoKotlin =
-            "com.nhaarman:mockito-kotlin:${TestVersions.mockitoKotlin}"
+        const val mockitoCore = "org.mockito:mockito-core:${TestVersions.mockito}"
+        const val mockitoInline = "org.mockito:mockito-inline:${TestVersions.mockito}"
+        const val mockitoKotlin = "com.nhaarman:mockito-kotlin:${TestVersions.mockitoKotlin}"
     }
 }
