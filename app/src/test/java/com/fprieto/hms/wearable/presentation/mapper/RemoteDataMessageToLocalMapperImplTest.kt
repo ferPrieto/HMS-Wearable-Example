@@ -79,6 +79,8 @@ class RemoteDataMessageToLocalMapperImplTest(
         val actualValue = cut.toLocalDataMessage(hiWearMessage)
 
         // Then
-        assertEquals(expected, actualValue)
+        assertEquals(expected.messageType, actualValue.messageType)
+        assertEquals(expected.playerCommand, actualValue.playerCommand)
+        assertEquals(expected.plainMessage, actualValue.plainMessage)
     }
 }
