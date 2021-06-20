@@ -3,8 +3,6 @@ package com.fprieto.hms.wearable.presentation.vm
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
-import com.fprieto.hms.wearable.presentation.mapper.RemoteDataMessageToLocalMapper
-import javax.inject.Inject
 
 abstract class MessagingViewModel : ViewModel() {
     abstract fun clearLogs()
@@ -20,9 +18,7 @@ abstract class MessagingViewModel : ViewModel() {
     abstract val setDebugMode: LiveData<Event<Boolean>>
 }
 
-class MessagingViewModelImpl @Inject constructor(
-    private val remoteDataMessageMapper: RemoteDataMessageToLocalMapper
-) : MessagingViewModel() {
+class MessagingViewModelImpl : MessagingViewModel() {
 
     private val _clearLogs = MediatorLiveData<Event<Unit>>()
     private val _pingDevice = MediatorLiveData<Event<Unit>>()

@@ -77,6 +77,7 @@ dependencies {
     implementation(Dependencies.AndroidX.appCompat)
     implementation(Dependencies.AndroidX.lifeCycleCommon)
 
+    implementation(Dependencies.AndroidX.material)
     implementation(Dependencies.AndroidX.constraintlayout)
     implementation(Dependencies.AndroidX.Navigation.fragmentKtx)
     implementation(Dependencies.AndroidX.Navigation.uiKtx)

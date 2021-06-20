@@ -13,6 +13,7 @@ object Versions {
     const val constraintLayout = "2.0.4"
     const val fragmentKtx = "1.3.2"
     const val lifecycleLivedataKtx = "2.2.0"
+    const val material = "1.2.1"
     const val gradle = "3.5.1"
     const val safeArgs = "2.3.5"
     const val kotlinxCoroutines = "1.4.2"
@@ -68,6 +69,9 @@ object Dependencies {
             "androidx.lifecycle:lifecycle-viewmodel:${Versions.lifecycleLivedataKtx}"
         const val archComponents =
             "androidx.lifecycle:lifecycle-extensions:${Versions.lifecycleLivedataKtx}"
+        const val material =
+            "com.google.android.material:material:${Versions.material}"
+
 
         object Navigation {
             const val fragmentKtx =
