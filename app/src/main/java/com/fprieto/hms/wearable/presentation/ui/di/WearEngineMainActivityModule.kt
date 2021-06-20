@@ -5,7 +5,7 @@ import com.fprieto.hms.wearable.di.ActivityScope
 import com.fprieto.hms.wearable.presentation.ui.DashboardFragment
 import com.fprieto.hms.wearable.presentation.ui.MessagingFragment
 import com.fprieto.hms.wearable.presentation.ui.PlayerFragment
-import com.fprieto.hms.wearable.presentation.ui.WearEngineMainActivity
+import com.fprieto.hms.wearable.presentation.ui.WearEngineActivity
 import dagger.Binds
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
@@ -15,7 +15,7 @@ import dagger.multibindings.IntoMap
 internal abstract class WearEngineMainActivityModule {
     @ActivityScope
     @ContributesAndroidInjector
-    abstract fun bindMainActivity(): WearEngineMainActivity
+    abstract fun bindMainActivity(): WearEngineActivity
 
     @Binds
     @IntoMap

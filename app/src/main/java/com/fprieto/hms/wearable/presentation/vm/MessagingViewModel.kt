@@ -3,6 +3,7 @@ package com.fprieto.hms.wearable.presentation.vm
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
+import javax.inject.Inject
 
 abstract class MessagingViewModel : ViewModel() {
     abstract fun clearLogs()
@@ -18,7 +19,7 @@ abstract class MessagingViewModel : ViewModel() {
     abstract val setDebugMode: LiveData<Event<Boolean>>
 }
 
-class MessagingViewModelImpl : MessagingViewModel() {
+class MessagingViewModelImpl @Inject constructor() : MessagingViewModel() {
 
     private val _clearLogs = MediatorLiveData<Event<Unit>>()
     private val _pingDevice = MediatorLiveData<Event<Unit>>()

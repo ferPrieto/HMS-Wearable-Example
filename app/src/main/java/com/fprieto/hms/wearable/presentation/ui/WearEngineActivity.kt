@@ -1,10 +1,11 @@
 package com.fprieto.hms.wearable.presentation.ui
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentFactory
 import androidx.navigation.Navigation
 import com.fprieto.hms.wearable.R
+import com.fprieto.hms.wearable.databinding.ActivityWearEngineBinding
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.huawei.wearengine.HiWear
 import com.huawei.wearengine.auth.AuthCallback
 import com.huawei.wearengine.auth.AuthClient
@@ -15,11 +16,13 @@ import javax.inject.Inject
 
 private val hiWearPermissions = arrayOf(Permission.DEVICE_MANAGER, Permission.NOTIFY)
 
-class WearEngineMainActivity : DaggerAppCompatActivity() {
+class WearEngineActivity : DaggerAppCompatActivity() {
 
     private val authClient: AuthClient by lazy {
         HiWear.getAuthClient(this)
     }
+
+    private lateinit var binding: ActivityWearEngineBinding
 
     @Inject
     lateinit var fragmentFactory: FragmentFactory
@@ -27,8 +30,16 @@ class WearEngineMainActivity : DaggerAppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        binding = ActivityWearEngineBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
+
         supportFragmentManager.fragmentFactory = fragmentFactory
-        setContentView(R.layout.activity_main)
+        checkPermissions()
+        setBottomNavigationListener()
+    }
+
+    private fun checkPermissions() {
         try {
             authClient.checkPermissions(hiWearPermissions).isSuccessful.let { allGranted ->
                 "All permission granted: $allGranted".logResult()
@@ -61,6 +72,20 @@ class WearEngineMainActivity : DaggerAppCompatActivity() {
         runOnUiThread {
             "Not all permission are granted for HiWear!".logResult()
             finish()
+        }
+    }
+
+    private fun setBottomNavigationListener() {
+        BottomNavigationView.OnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.action_dashboard -> {
+                    true
+                }
+                R.id.action_messaging -> {
+                    true
+                }
+                else -> false
+            }
         }
     }
 

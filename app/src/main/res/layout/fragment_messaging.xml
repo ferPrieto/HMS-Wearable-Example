@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".presentation.ui.WearEngineMainActivity">
+    tools:context=".presentation.ui.WearEngineActivity">
 
     <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/debug_mode_switch"
