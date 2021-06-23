@@ -12,13 +12,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import com.fprieto.hms.wearable.R
 import com.fprieto.hms.wearable.credentials.CredentialsProvider
 import com.fprieto.hms.wearable.databinding.FragmentDashboardBinding
 import com.fprieto.hms.wearable.databinding.ViewLogsBinding
 import com.fprieto.hms.wearable.extensions.await
-import com.fprieto.hms.wearable.model.local.LocalMessageType
 import com.fprieto.hms.wearable.presentation.vm.DashboardViewModel
 import com.fprieto.hms.wearable.presentation.vm.observeEvent
 import com.huawei.wearengine.HiWear
@@ -64,6 +62,11 @@ class DashboardFragment @Inject constructor(
 
     override fun onResume() {
         super.onResume()
+        resetRadioGroupView()
+        viewModel.getLastFoundDevices()
+    }
+
+    private fun resetRadioGroupView() {
         binding.deviceRadioGroup.clearCheck()
         binding.deviceRadioGroup.removeAllViews()
     }
@@ -83,28 +86,22 @@ class DashboardFragment @Inject constructor(
             viewLogsBinding.logOutputTextView.text = ""
         }
 
-        binding.messaging.setOnClickListener {
-            viewModel.getNavigationDestination(null, LocalMessageType.TextMessage)
+        binding.deviceRadioGroup.setOnCheckedChangeListener { _: RadioGroup, checkedId: Int ->
+            selectRadioButton(checkedId)
         }
 
-        binding.mediaPlayer.setOnClickListener {
-            viewModel.getNavigationDestination(null, LocalMessageType.PlayerCommand)
-        }
-        binding.deviceRadioGroup.setOnCheckedChangeListener { radioGroup: RadioGroup, checkedId: Int ->
-            selectRadioButton(radioGroup, checkedId)
-        }
         binding.debugModeSwitch.setOnCheckedChangeListener { _, isChecked ->
             viewLogsBinding.scrollView.isVisible = isChecked
             binding.clearLogs.isVisible = isChecked
         }
     }
 
-    private fun selectRadioButton(radioGroup: RadioGroup, checkedId: Int) {
-        if (radioGroup.childCount > 0 && checkedId != -1) {
-            radioGroup.children.first { childrenView ->
+    private fun selectRadioButton(checkedId: Int) {
+        if (binding.deviceRadioGroup.childCount > 0 && checkedId != -1) {
+            binding.deviceRadioGroup.children.first { childrenView ->
                 childrenView.id == checkedId
             }.let { childrenViewFound ->
-                registerP2pClientReceiver(registerReceiver(), childrenViewFound as RadioButton)
+                viewModel.selectDeviceBy((childrenViewFound as RadioButton).tag as String)
             }
         }
     }
@@ -116,6 +113,7 @@ class DashboardFragment @Inject constructor(
                     if (devices.isNotEmpty()) {
                         "Bonded Devices onSuccess! devices list size = ${devices.size}".logResult()
                         updateDeviceList(devices)
+                        viewModel.setFoundDevices(devices)
                     } else {
                         "Devices list is null or empty".logResult()
                     }
@@ -144,70 +142,41 @@ class DashboardFragment @Inject constructor(
         setTag(R.id.device_tag, device.uuid)
     }
 
-    private fun checkSelectedDevice(): Device? =
-        binding.deviceRadioGroup.checkedRadioButtonId.let { buttonId ->
-            (binding.deviceRadioGroup.findViewById<RadioButton>(buttonId)
-                ?.getTag(R.id.device_tag) as? String?)?.let { deviceUUId ->
-                getDeviceByUUID(deviceUUId)
-            } ?: run { null }
-        }
-
-    private fun getDeviceByUUID(uuid: String): Device? =
-        connectedDevices.firstOrNull { device -> device.uuid == uuid }
-
     private fun registerReceiver() = Receiver { message ->
-        message?.let { msg ->
-            viewModel.getNavigationDestination(msg, null)
-        } ?: run { "Failed to manage the message on Dashboard".logResult() }
+        Timber.d(message.data.toString())
     }
 
-    private fun registerP2pClientReceiver(receiver: Receiver, radioButton: RadioButton) {
-        checkSelectedDevice().let { device ->
-            device?.let {
-                if (device.isConnected) {
-                    p2pClient.registerReceiver(device, receiver)
-                        .addOnSuccessListener {
-                            "Register receiver listener succeed!".logResult()
-                            radioButton.isChecked = true
-                        }
-                        .addOnFailureListener {
-                            "Register receiver listener failed!".logError(it)
-                            radioButton.isChecked = false
-                        }
-                } else {
-                    radioButton.isChecked = false
-                    "The device seems to be disconnected".logResult()
-                }
-            } ?: run {
+    private fun setViewModelObservers() {
+        viewModel.lastFoundDevices.observeEvent(this) { devices ->
+            updateDeviceList(devices)
+        }
+
+        viewModel.selectedDevice.observeEvent(this) { device ->
+            registerP2pClientReceiver(registerReceiver(), device)
+        }
+    }
+
+    private fun registerP2pClientReceiver(receiver: Receiver, device: Device) {
+        getRadioButtonBy(device.uuid).let { radioButton ->
+            if (device.isConnected) {
+                p2pClient.registerReceiver(device, receiver)
+                    .addOnSuccessListener {
+                        "Register receiver listener succeed!".logResult()
+                        radioButton.isChecked = true
+                    }
+                    .addOnFailureListener {
+                        "Register receiver listener failed!".logError(it)
+                        radioButton.isChecked = false
+                    }
+            } else {
                 radioButton.isChecked = false
-                "Click on get Devices button again".logResult()
+                "The device seems to be disconnected".logResult()
             }
         }
     }
 
-    private fun setViewModelObservers() {
-        viewModel.navigateToMessaging.observeEvent(this) {
-            checkSelectedDevice()?.let { device ->
-                val direction =
-                    DashboardFragmentDirections.actionDashboardFragmentToMessagingFragment(device.uuid)
-                findNavController().navigate(direction)
-            } ?: run { "No device selected, get available devices again".logResult() }
-        }
-
-        viewModel.navigateToPlayer.observeEvent(this) { playerCommand ->
-            checkSelectedDevice()?.let { device ->
-                val direction = DashboardFragmentDirections.actionDashboardFragmentToPlayerFragment(
-                    device.uuid, playerCommand
-                )
-                findNavController().navigate(direction)
-            } ?: run { "No device selected, get available devices again".logResult() }
-        }
-    }
-
-    private fun getDestination(messageType: LocalMessageType) = when (messageType) {
-        LocalMessageType.PlayerCommand -> Destination.MediaPlayer
-        else -> Destination.Messaging
-    }
+    private fun getRadioButtonBy(uuId: String): RadioButton =
+        binding.deviceRadioGroup.findViewWithTag(uuId)
 
     private fun String.logResult() {
         appendOnOutputView(this)

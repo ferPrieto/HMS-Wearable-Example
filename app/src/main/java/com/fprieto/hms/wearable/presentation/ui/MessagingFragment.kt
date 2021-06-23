@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -14,7 +13,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import com.fprieto.hms.wearable.R
 import com.fprieto.hms.wearable.audio.AudioPlayer
 import com.fprieto.hms.wearable.credentials.CredentialsProvider
@@ -104,7 +102,7 @@ class MessagingFragment @Inject constructor(
 
     override fun onResume() {
         super.onResume()
-        registerReceiver()
+        viewModel.getSelectedDevice()
     }
 
     override fun onCreateView(
@@ -119,43 +117,8 @@ class MessagingFragment @Inject constructor(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        reSelectDevice()
         initViews()
         setViewModelObservers()
-    }
-
-    private fun reSelectDevice() {
-        getDeviceUuId().let { uuId ->
-            lifecycleScope.launch {
-                try {
-                    deviceClient.bondedDevices.await().let { devices ->
-                        if (devices.isNullOrEmpty()) {
-                            Toast.makeText(
-                                context,
-                                "The device selected is unavailable",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            Timber.e("The device selected is unavailable")
-                            findNavController().navigateUp()
-                            return@launch
-                        }
-                        devices.firstOrNull { device -> device.uuid == uuId }?.let { device ->
-                            selectedDevice = device
-                        }
-                    }
-                } catch (e: Exception) {
-                    Toast.makeText(context, "Error getting available devices", Toast.LENGTH_SHORT)
-                        .show()
-                    Timber.e(e, "Error getting available devices: ${e.message}")
-                    findNavController().navigateUp()
-                }
-            }
-        }
-    }
-
-    private fun getDeviceUuId(): String {
-        val args: MessagingFragmentArgs by navArgs()
-        return args.deviceUuid
     }
 
     private fun initViews() {
@@ -201,6 +164,10 @@ class MessagingFragment @Inject constructor(
     }
 
     private fun setViewModelObservers() {
+        viewModel.selectedDevice.observeEvent(this) { lastSelectedDevice ->
+            selectDevice(lastSelectedDevice)
+        }
+
         viewModel.clearLogs.observeEvent(this) {
             viewLogsBinding.logOutputTextView.text = ""
         }
@@ -223,6 +190,16 @@ class MessagingFragment @Inject constructor(
         }
     }
 
+    private fun selectDevice(lastSelectedDevice: Device) {
+        lifecycleScope.launch {
+            deviceClient.bondedDevices.await().let { devices ->
+                devices.firstOrNull { device -> device.uuid == lastSelectedDevice.uuid }
+                    ?.let { device ->
+                        selectedDevice = device
+                    } ?: IllegalStateException("The device has not been found")
+            }
+        }
+    }
 
     private fun sendMessage(text: String) {
         if (selectedDevice?.isConnected == true) {

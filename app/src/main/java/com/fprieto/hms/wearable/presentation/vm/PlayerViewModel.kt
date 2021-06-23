@@ -3,15 +3,24 @@ package com.fprieto.hms.wearable.presentation.vm
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.fprieto.hms.wearable.data.repository.DeviceRepository
 import com.fprieto.hms.wearable.presentation.mapper.RemoteDataMessageToLocalMapper
 import com.fprieto.hms.wearable.model.local.LocalMessageType
 import com.fprieto.hms.wearable.model.local.LocalPlayerCommand
+import com.huawei.wearengine.device.Device
 import com.huawei.wearengine.p2p.Message
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 abstract class PlayerViewModel : ViewModel() {
+    abstract fun getSelectedDevice()
     abstract fun manageReceivedMessage(message: Message)
 
+    abstract val selectedDevice: LiveData<Event<Device>>
     abstract val playVideo: LiveData<Event<Unit>>
     abstract val pauseVideo: LiveData<Event<Unit>>
     abstract val rewindVideo: LiveData<Event<Unit>>
@@ -19,13 +28,18 @@ abstract class PlayerViewModel : ViewModel() {
 }
 
 class PlayerViewModelImpl @Inject constructor(
+    private val deviceRepository: DeviceRepository,
     private val remoteDataMessageMapper: RemoteDataMessageToLocalMapper
 ) : PlayerViewModel() {
 
+    private val _selectedDevice = MediatorLiveData<Event<Device>>()
     private val _playVideo = MediatorLiveData<Event<Unit>>()
     private val _pauseVideo = MediatorLiveData<Event<Unit>>()
     private val _rewindVideo = MediatorLiveData<Event<Unit>>()
     private val _fastForwardVideo = MediatorLiveData<Event<Unit>>()
+
+    override val selectedDevice: LiveData<Event<Device>>
+        get() = _selectedDevice
 
     override val playVideo: LiveData<Event<Unit>>
         get() = _playVideo
@@ -38,6 +52,19 @@ class PlayerViewModelImpl @Inject constructor(
 
     override val fastForwardVideo: LiveData<Event<Unit>>
         get() = _fastForwardVideo
+
+    private val errorHandler = CoroutineExceptionHandler { _, exception ->
+        Timber.e(exception)
+    }
+
+    override fun getSelectedDevice() {
+        viewModelScope.launch(errorHandler) {
+            deviceRepository.getSelectedDevice()
+                .collectLatest { device ->
+                    _selectedDevice.postValue(eventOf(device))
+                }
+        }
+    }
 
     override fun manageReceivedMessage(message: Message) {
         remoteDataMessageMapper.toLocalDataMessage(message).let { localDataMessage ->

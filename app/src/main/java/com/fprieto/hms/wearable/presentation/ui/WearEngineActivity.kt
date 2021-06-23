@@ -2,10 +2,12 @@ package com.fprieto.hms.wearable.presentation.ui
 
 import android.os.Bundle
 import androidx.fragment.app.FragmentFactory
+import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupWithNavController
 import com.fprieto.hms.wearable.R
 import com.fprieto.hms.wearable.databinding.ActivityWearEngineBinding
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.huawei.wearengine.HiWear
 import com.huawei.wearengine.auth.AuthCallback
 import com.huawei.wearengine.auth.AuthClient
@@ -23,6 +25,7 @@ class WearEngineActivity : DaggerAppCompatActivity() {
     }
 
     private lateinit var binding: ActivityWearEngineBinding
+    private lateinit var navController: NavController
 
     @Inject
     lateinit var fragmentFactory: FragmentFactory
@@ -30,13 +33,21 @@ class WearEngineActivity : DaggerAppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = ActivityWearEngineBinding.inflate(layoutInflater)
-        val view = binding.root
-        setContentView(view)
-
         supportFragmentManager.fragmentFactory = fragmentFactory
+        binding = ActivityWearEngineBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        setBottomNavigation()
         checkPermissions()
-        setBottomNavigationListener()
+    }
+
+    private fun setBottomNavigation() {
+        val navHostFragment = supportFragmentManager.findFragmentById(
+            R.id.mainNavigationFragment
+        ) as NavHostFragment
+
+        navController = navHostFragment.navController
+        binding.bottomNavigation.setupWithNavController(navController)
     }
 
     private fun checkPermissions() {
@@ -72,20 +83,6 @@ class WearEngineActivity : DaggerAppCompatActivity() {
         runOnUiThread {
             "Not all permission are granted for HiWear!".logResult()
             finish()
-        }
-    }
-
-    private fun setBottomNavigationListener() {
-        BottomNavigationView.OnNavigationItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.action_dashboard -> {
-                    true
-                }
-                R.id.action_messaging -> {
-                    true
-                }
-                else -> false
-            }
         }
     }
 
