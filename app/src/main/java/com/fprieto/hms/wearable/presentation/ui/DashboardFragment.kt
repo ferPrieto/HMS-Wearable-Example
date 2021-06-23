@@ -113,7 +113,7 @@ class DashboardFragment @Inject constructor(
                     if (devices.isNotEmpty()) {
                         "Bonded Devices onSuccess! devices list size = ${devices.size}".logResult()
                         updateDeviceList(devices)
-                        viewModel.setFoundDevices(devices)
+                        //todo: viewModel.setFoundDevices(devices)
                     } else {
                         "Devices list is null or empty".logResult()
                     }
@@ -139,7 +139,7 @@ class DashboardFragment @Inject constructor(
     private fun getRadioButton(device: Device) = RadioButton(context).apply {
         id = View.generateViewId()
         text = device.name
-        setTag(R.id.device_tag, device.uuid)
+        tag = device.uuid
     }
 
     private fun registerReceiver() = Receiver { message ->
