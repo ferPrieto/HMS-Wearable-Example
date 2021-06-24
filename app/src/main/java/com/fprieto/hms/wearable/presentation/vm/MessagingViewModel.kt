@@ -3,16 +3,24 @@ package com.fprieto.hms.wearable.presentation.vm
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
-import com.fprieto.hms.wearable.presentation.mapper.RemoteDataMessageToLocalMapper
+import androidx.lifecycle.viewModelScope
+import com.fprieto.hms.wearable.data.repository.DeviceRepository
+import com.huawei.wearengine.device.Device
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 abstract class MessagingViewModel : ViewModel() {
+    abstract fun getSelectedDevice()
     abstract fun clearLogs()
     abstract fun pingDevice()
     abstract fun sendMessage()
     abstract fun takePhoto()
     abstract fun setDebugMode(isChecked: Boolean)
 
+    abstract val selectedDevice: LiveData<Event<Device>>
     abstract val clearLogs: LiveData<Event<Unit>>
     abstract val pingDevice: LiveData<Event<Unit>>
     abstract val sendMessage: LiveData<Event<Unit>>
@@ -21,14 +29,18 @@ abstract class MessagingViewModel : ViewModel() {
 }
 
 class MessagingViewModelImpl @Inject constructor(
-    private val remoteDataMessageMapper: RemoteDataMessageToLocalMapper
+    private val deviceRepository: DeviceRepository
 ) : MessagingViewModel() {
 
+    private val _selectedDevice = MediatorLiveData<Event<Device>>()
     private val _clearLogs = MediatorLiveData<Event<Unit>>()
     private val _pingDevice = MediatorLiveData<Event<Unit>>()
     private val _sendMessage = MediatorLiveData<Event<Unit>>()
     private val _takePhoto = MediatorLiveData<Event<Unit>>()
     private val _setDebugMode = MediatorLiveData<Event<Boolean>>()
+
+    override val selectedDevice: LiveData<Event<Device>>
+        get() = _selectedDevice
 
     override val clearLogs: LiveData<Event<Unit>>
         get() = _clearLogs
@@ -44,6 +56,19 @@ class MessagingViewModelImpl @Inject constructor(
 
     override val setDebugMode: LiveData<Event<Boolean>>
         get() = _setDebugMode
+
+    private val errorHandler = CoroutineExceptionHandler { _, exception ->
+        Timber.e(exception)
+    }
+
+    override fun getSelectedDevice() {
+        viewModelScope.launch(errorHandler) {
+            deviceRepository.getSelectedDevice()
+                .collectLatest { device ->
+                    _selectedDevice.postValue(eventOf(device))
+                }
+        }
+    }
 
     override fun clearLogs() {
         _clearLogs.postValue(eventOf(Unit))

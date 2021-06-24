@@ -31,6 +31,9 @@
     <string name="device_manager_description">Obtains the list of bound devices:</string>
     <string name="p2p_manager_description">P2P communication and message management:</string>
     <string name="monitor_manager_description">Registering or unregistering a listener for monitoring the connection status:</string>
+    <string name="tab_title_dashboard">Dashboard</string>
+    <string name="tab_title_messaging">Messaging</string>
+    <string name="tab_title_player">Player</string>
 
 
 </resources>

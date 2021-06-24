@@ -9,8 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import com.fprieto.hms.wearable.R
 import com.fprieto.hms.wearable.audio.AudioPlayer
 import com.fprieto.hms.wearable.credentials.CredentialsProvider
@@ -80,7 +78,7 @@ class PlayerFragment @Inject constructor(
 
     override fun onResume() {
         super.onResume()
-        registerReceivers()
+        viewModel.getSelectedDevice()
     }
 
     override fun onCreateView(
@@ -95,36 +93,10 @@ class PlayerFragment @Inject constructor(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        reSelectDevice()
         initViews()
         getLatestPlayerState(savedInstanceState)
         renderVideo()
         setViewModelObservers()
-    }
-
-    private fun reSelectDevice() {
-        getDeviceUuId().let { uuId ->
-            lifecycleScope.launch {
-                try {
-                    deviceClient.bondedDevices.await().let { devices ->
-                        devices.firstOrNull { device -> device.uuid == uuId }?.let { device ->
-                            selectedDevice = device
-                        } ?: run {
-                            "The device selected is unavailable".logResult()
-                            findNavController().navigateUp()
-                        }
-                    }
-                } catch (e: Exception) {
-                    "Error getting available devices: ${e.message}".logError(e)
-                    findNavController().navigateUp()
-                }
-            }
-        }
-    }
-
-    private fun getDeviceUuId(): String {
-        val args: PlayerFragmentArgs by navArgs()
-        return args.deviceUuid
     }
 
     private fun initViews() {
@@ -152,6 +124,10 @@ class PlayerFragment @Inject constructor(
     }
 
     private fun setViewModelObservers() {
+        viewModel.selectedDevice.observeEvent(this) { lastSelectedDevice ->
+            selectDevice(lastSelectedDevice)
+        }
+
         viewModel.playVideo.observeEvent(this) {
             binding.videoPlayer.play()
             "Play Command Selected".logResult()
@@ -167,6 +143,17 @@ class PlayerFragment @Inject constructor(
         viewModel.fastForwardVideo.observeEvent(this) {
             binding.videoPlayer.fastForward()
             "FastForward Command Selected".logResult()
+        }
+    }
+
+    private fun selectDevice(lastSelectedDevice: Device) {
+        lifecycleScope.launch {
+            deviceClient.bondedDevices.await().let { devices ->
+                devices.firstOrNull { device -> device.uuid == lastSelectedDevice.uuid }
+                    ?.let { device ->
+                        selectedDevice = device
+                    } ?: IllegalStateException("The device has not been found")
+            }
         }
     }
 

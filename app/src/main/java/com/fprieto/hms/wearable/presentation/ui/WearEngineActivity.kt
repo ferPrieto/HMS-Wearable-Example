@@ -1,10 +1,13 @@
 package com.fprieto.hms.wearable.presentation.ui
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentFactory
+import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupWithNavController
 import com.fprieto.hms.wearable.R
+import com.fprieto.hms.wearable.databinding.ActivityWearEngineBinding
 import com.huawei.wearengine.HiWear
 import com.huawei.wearengine.auth.AuthCallback
 import com.huawei.wearengine.auth.AuthClient
@@ -15,11 +18,14 @@ import javax.inject.Inject
 
 private val hiWearPermissions = arrayOf(Permission.DEVICE_MANAGER, Permission.NOTIFY)
 
-class WearEngineMainActivity : DaggerAppCompatActivity() {
+class WearEngineActivity : DaggerAppCompatActivity() {
 
     private val authClient: AuthClient by lazy {
         HiWear.getAuthClient(this)
     }
+
+    private lateinit var binding: ActivityWearEngineBinding
+    private lateinit var navController: NavController
 
     @Inject
     lateinit var fragmentFactory: FragmentFactory
@@ -28,7 +34,23 @@ class WearEngineMainActivity : DaggerAppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         supportFragmentManager.fragmentFactory = fragmentFactory
-        setContentView(R.layout.activity_main)
+        binding = ActivityWearEngineBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        setBottomNavigation()
+        checkPermissions()
+    }
+
+    private fun setBottomNavigation() {
+        val navHostFragment = supportFragmentManager.findFragmentById(
+            R.id.mainNavigationFragment
+        ) as NavHostFragment
+
+        navController = navHostFragment.navController
+        binding.bottomNavigation.setupWithNavController(navController)
+    }
+
+    private fun checkPermissions() {
         try {
             authClient.checkPermissions(hiWearPermissions).isSuccessful.let { allGranted ->
                 "All permission granted: $allGranted".logResult()
