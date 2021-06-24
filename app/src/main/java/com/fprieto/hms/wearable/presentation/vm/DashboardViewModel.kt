@@ -13,10 +13,10 @@ import timber.log.Timber
 import javax.inject.Inject
 
 abstract class DashboardViewModel : ViewModel() {
-    abstract fun selectDevice(device: Device)
     abstract fun selectDeviceBy(uuId: String)
     abstract fun setFoundDevices(devices: List<Device>)
     abstract fun getLastFoundDevices()
+    abstract fun getSelectedDevice()
 
     abstract val selectedDevice: LiveData<Event<Device>>
     abstract val lastFoundDevices: LiveData<Event<List<Device>>>
@@ -26,23 +26,17 @@ class DashboardViewModelImpl @Inject constructor(
     private val deviceRepository: DeviceRepository
 ) : DashboardViewModel() {
 
-    private val _selectedDevice = MediatorLiveData<Event<Device>>()
     private val _lastFoundDevices = MediatorLiveData<Event<List<Device>>>()
-
-    override val selectedDevice: LiveData<Event<Device>>
-        get() = _selectedDevice
+    private val _selectedDevice = MediatorLiveData<Event<Device>>()
 
     override val lastFoundDevices: LiveData<Event<List<Device>>>
         get() = _lastFoundDevices
 
+    override val selectedDevice: LiveData<Event<Device>>
+        get() = _selectedDevice
+
     private val errorHandler = CoroutineExceptionHandler { _, exception ->
         Timber.e(exception)
-    }
-
-    override fun selectDevice(device: Device) {
-        viewModelScope.launch {
-            deviceRepository.setSelectedDevice(device)
-        }
     }
 
     override fun selectDeviceBy(uuId: String) {
@@ -57,14 +51,26 @@ class DashboardViewModelImpl @Inject constructor(
     override fun setFoundDevices(devices: List<Device>) {
         viewModelScope.launch {
             deviceRepository.setFoundDevices(devices)
+                .collectLatest { devices ->
+                    _lastFoundDevices.postValue(eventOf(devices))
+                }
         }
     }
 
     override fun getLastFoundDevices() {
         viewModelScope.launch {
-            deviceRepository.getLastFoundDevices().let { devices ->
+            deviceRepository.getLastFoundDevices().collectLatest { devices ->
                 _lastFoundDevices.postValue(eventOf(devices))
             }
+        }
+    }
+
+    override fun getSelectedDevice() {
+        viewModelScope.launch(errorHandler) {
+            deviceRepository.getSelectedDevice()
+                .collectLatest { device ->
+                    _selectedDevice.postValue(eventOf(device))
+                }
         }
     }
 }

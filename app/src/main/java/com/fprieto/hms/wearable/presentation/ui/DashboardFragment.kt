@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
+
 class DashboardFragment @Inject constructor(
     viewModelFactory: ViewModelProvider.Factory
 ) : Fragment(R.layout.fragment_dashboard) {
@@ -36,7 +37,6 @@ class DashboardFragment @Inject constructor(
 
     private lateinit var binding: FragmentDashboardBinding
     private lateinit var viewLogsBinding: ViewLogsBinding
-    private val connectedDevices: MutableList<Device> = mutableListOf()
     private val credentialsProvider: CredentialsProvider = CredentialsProvider()
 
     private val p2pClient: P2pClient by lazy {
@@ -62,13 +62,8 @@ class DashboardFragment @Inject constructor(
 
     override fun onResume() {
         super.onResume()
-        resetRadioGroupView()
         viewModel.getLastFoundDevices()
-    }
-
-    private fun resetRadioGroupView() {
-        binding.deviceRadioGroup.clearCheck()
-        binding.deviceRadioGroup.removeAllViews()
+        viewModel.getSelectedDevice()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -112,8 +107,7 @@ class DashboardFragment @Inject constructor(
                 deviceClient.bondedDevices.await().let { devices ->
                     if (devices.isNotEmpty()) {
                         "Bonded Devices onSuccess! devices list size = ${devices.size}".logResult()
-                        updateDeviceList(devices)
-                        //todo: viewModel.setFoundDevices(devices)
+                        viewModel.setFoundDevices(devices)
                     } else {
                         "Devices list is null or empty".logResult()
                     }
@@ -132,7 +126,6 @@ class DashboardFragment @Inject constructor(
             getRadioButton(device).let { radioButton ->
                 binding.deviceRadioGroup.addView(radioButton)
             }
-            connectedDevices.add(device)
         }
     }
 
@@ -152,25 +145,27 @@ class DashboardFragment @Inject constructor(
         }
 
         viewModel.selectedDevice.observeEvent(this) { device ->
-            registerP2pClientReceiver(registerReceiver(), device)
+            registerP2pClientReceiver(device)
         }
     }
 
-    private fun registerP2pClientReceiver(receiver: Receiver, device: Device) {
-        getRadioButtonBy(device.uuid).let { radioButton ->
-            if (device.isConnected) {
-                p2pClient.registerReceiver(device, receiver)
-                    .addOnSuccessListener {
-                        "Register receiver listener succeed!".logResult()
-                        radioButton.isChecked = true
-                    }
-                    .addOnFailureListener {
-                        "Register receiver listener failed!".logError(it)
-                        radioButton.isChecked = false
-                    }
-            } else {
-                radioButton.isChecked = false
-                "The device seems to be disconnected".logResult()
+    private fun registerP2pClientReceiver(device: Device) {
+        if (binding.deviceRadioGroup.childCount > 0) {
+            getRadioButtonBy(device.uuid).let { radioButton ->
+                if (device.isConnected) {
+                    p2pClient.registerReceiver(device, registerReceiver())
+                        .addOnSuccessListener {
+                            "Register receiver listener succeed!".logResult()
+                            radioButton.isChecked = true
+                        }
+                        .addOnFailureListener {
+                            "Register receiver listener failed!".logError(it)
+                            radioButton.isChecked = false
+                        }
+                } else {
+                    radioButton.isChecked = false
+                    "The device seems to be disconnected".logResult()
+                }
             }
         }
     }
@@ -196,9 +191,4 @@ class DashboardFragment @Inject constructor(
             }
         }
     }
-}
-
-enum class Destination {
-    Messaging,
-    MediaPlayer
 }
