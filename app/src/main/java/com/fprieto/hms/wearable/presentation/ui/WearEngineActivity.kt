@@ -56,7 +56,7 @@ class WearEngineActivity : DaggerAppCompatActivity() {
 
         setBottomNavigation()
         initHealthKitService()
-        requestAuth()
+        requestHealthKitAuth()
         checkPermissions()
     }
 
@@ -74,7 +74,7 @@ class WearEngineActivity : DaggerAppCompatActivity() {
         settingController = HuaweiHiHealth.getSettingController(this, signInHuaweiId)
     }
 
-    private fun requestAuth() {
+    private fun requestHealthKitAuth() {
         val scopes = arrayOf(
             Scopes.HEALTHKIT_STEP_READ,
             Scopes.HEALTHKIT_STEP_WRITE,
@@ -84,22 +84,19 @@ class WearEngineActivity : DaggerAppCompatActivity() {
             Scopes.HEALTHKIT_HEARTRATE_WRITE
         )
 
-        val intent: Intent = settingController.requestAuthorizationIntent(scopes, true)
+        val requestAuthorizationIntent: Intent =
+            settingController.requestAuthorizationIntent(scopes, true)
 
-        "Start authorization activity".logResult()
-
-        val activityResultLauncher = registerForActivityResult(
+        "Start HealthKit authorization activity".logResult()
+        registerForActivityResult(
             StartActivityForResult()
         ) { result: ActivityResult ->
             if (result.resultCode == Activity.RESULT_OK) {
-                "RESULT OK".logResult()
+                "HealthKit Result OK".logResult()
             } else {
-                "RESULT NOK".logResult()
+                "HealthKit Result NOK".logResult()
             }
-
-        }
-
-        activityResultLauncher.launch(intent)
+        }.launch(requestAuthorizationIntent)
     }
 
     private fun checkPermissions() {
@@ -110,7 +107,6 @@ class WearEngineActivity : DaggerAppCompatActivity() {
                     askForHiWearPermissions()
                 }
             }
-
         } catch (e: Exception) {
             "Failed to ask for permissions".logResult()
             onNotAllPermissionGranted()
