@@ -32,7 +32,7 @@ class DeviceRepositoryImpl @Inject constructor(
             device.setConnectState(DEVICE_CONNECTED)
             deviceLocalSource.selectedDevice = device
             _selectedDeviceSharedFlow.emit(device)
-        } ?: IllegalStateException("The device has not been found")
+        }
         return selectedDeviceSharedFlow.distinctUntilChanged()
     }
 

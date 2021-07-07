@@ -150,9 +150,7 @@ class PlayerFragment @Inject constructor(
         lifecycleScope.launch {
             deviceClient.bondedDevices.await().let { devices ->
                 devices.firstOrNull { device -> device.uuid == lastSelectedDevice.uuid }
-                    ?.let { device ->
-                        selectedDevice = device
-                    } ?: IllegalStateException("The device has not been found")
+                    ?.let { selectedDevice = lastSelectedDevice }
             }
         }
     }

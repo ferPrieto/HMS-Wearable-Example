@@ -52,6 +52,7 @@ class MessagingFragment @Inject constructor(
 
     private val credentialsProvider: CredentialsProvider = CredentialsProvider()
     private lateinit var sendCallback: SendCallback
+
     private var selectedDevice: Device? = null
         set(value) {
             field = value
@@ -194,9 +195,7 @@ class MessagingFragment @Inject constructor(
         lifecycleScope.launch {
             deviceClient.bondedDevices.await().let { devices ->
                 devices.firstOrNull { device -> device.uuid == lastSelectedDevice.uuid }
-                    ?.let { device ->
-                        selectedDevice = device
-                    } ?: IllegalStateException("The device has not been found")
+                    ?.let { selectedDevice = lastSelectedDevice }
             }
         }
     }

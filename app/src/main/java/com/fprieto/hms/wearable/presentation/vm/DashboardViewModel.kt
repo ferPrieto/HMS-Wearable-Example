@@ -18,7 +18,7 @@ abstract class DashboardViewModel : ViewModel() {
     abstract fun getLastFoundDevices()
     abstract fun getSelectedDevice()
 
-    abstract val selectedDevice: LiveData<Event<Device>>
+    abstract val selectedDevice: LiveData<Event<Device?>>
     abstract val lastFoundDevices: LiveData<Event<List<Device>>>
 }
 
@@ -27,12 +27,12 @@ class DashboardViewModelImpl @Inject constructor(
 ) : DashboardViewModel() {
 
     private val _lastFoundDevices = MediatorLiveData<Event<List<Device>>>()
-    private val _selectedDevice = MediatorLiveData<Event<Device>>()
+    private val _selectedDevice = MediatorLiveData<Event<Device?>>()
 
     override val lastFoundDevices: LiveData<Event<List<Device>>>
         get() = _lastFoundDevices
 
-    override val selectedDevice: LiveData<Event<Device>>
+    override val selectedDevice: LiveData<Event<Device?>>
         get() = _selectedDevice
 
     private val errorHandler = CoroutineExceptionHandler { _, exception ->
@@ -69,7 +69,11 @@ class DashboardViewModelImpl @Inject constructor(
         viewModelScope.launch(errorHandler) {
             deviceRepository.getSelectedDevice()
                 .collectLatest { device ->
-                    _selectedDevice.postValue(eventOf(device))
+                    if (device.uuid.isEmpty()) {
+                        _selectedDevice.postValue(eventOf(null))
+                    } else {
+                        _selectedDevice.postValue(eventOf(device))
+                    }
                 }
         }
     }

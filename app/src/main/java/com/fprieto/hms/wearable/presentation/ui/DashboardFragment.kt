@@ -145,7 +145,9 @@ class DashboardFragment @Inject constructor(
         }
 
         viewModel.selectedDevice.observeEvent(this) { device ->
-            registerP2pClientReceiver(device)
+            device?.let {
+                registerP2pClientReceiver(device)
+            }
         }
     }
 
