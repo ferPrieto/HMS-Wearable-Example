@@ -16,6 +16,7 @@ android {
         targetSdkVersion(AndroidSettings.targetSdk)
         versionCode = AndroidSettings.appVersionCode
         versionName = AndroidSettings.appVersionName
+        resConfigs ("en","zh-rCN")
     }
     buildFeatures {
         viewBinding = true
@@ -87,6 +88,7 @@ dependencies {
 
     implementation(Dependencies.Huawei.wearengine)
     implementation(Dependencies.Huawei.hmsBase)
+    implementation(Dependencies.Huawei.health)
 
     implementation(Dependencies.ExoPlayer.core)
     implementation(Dependencies.ExoPlayer.ui)
