@@ -19,6 +19,14 @@ import com.fprieto.hms.wearable.databinding.ViewLogsBinding
 import com.fprieto.hms.wearable.extensions.await
 import com.fprieto.hms.wearable.presentation.vm.DashboardViewModel
 import com.fprieto.hms.wearable.presentation.vm.observeEvent
+import com.huawei.hms.hihealth.DataController
+import com.huawei.hms.hihealth.HiHealthOptions
+import com.huawei.hms.hihealth.HuaweiHiHealth
+import com.huawei.hms.hihealth.data.DataType
+import com.huawei.hms.hihealth.data.SamplePoint
+import com.huawei.hms.hihealth.data.SampleSet
+import com.huawei.hms.support.hwid.HuaweiIdAuthManager
+import com.huawei.hms.support.hwid.result.AuthHuaweiId
 import com.huawei.wearengine.HiWear
 import com.huawei.wearengine.device.Device
 import com.huawei.wearengine.device.DeviceClient
@@ -27,7 +35,6 @@ import com.huawei.wearengine.p2p.Receiver
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
-
 
 class DashboardFragment @Inject constructor(
     viewModelFactory: ViewModelProvider.Factory
@@ -50,6 +57,31 @@ class DashboardFragment @Inject constructor(
         HiWear.getDeviceClient(context)
     }
 
+    private val dataController: DataController by lazy {
+        HiHealthOptions.builder()
+            .addDataType(DataType.DT_CONTINUOUS_STEPS_DELTA, HiHealthOptions.ACCESS_READ)
+            .addDataType(DataType.DT_CONTINUOUS_CALORIES_BURNT_TOTAL, HiHealthOptions.ACCESS_READ)
+            .addDataType(
+                DataType.POLYMERIZE_CONTINUOUS_ACTIVITY_STATISTICS,
+                HiHealthOptions.ACCESS_READ
+            )
+            .addDataType(DataType.DT_INSTANTANEOUS_LOCATION_TRACE, HiHealthOptions.ACCESS_READ)
+            .addDataType(DataType.DT_STATISTICS_SLEEP, HiHealthOptions.ACCESS_READ)
+            .addDataType(
+                DataType.POLYMERIZE_CONTINUOUS_HEART_RATE_STATISTICS,
+                HiHealthOptions.ACCESS_READ
+            )
+            .addDataType(
+                DataType.POLYMERIZE_CONTINUOUS_HEART_RATE_STATISTICS,
+                HiHealthOptions.ACCESS_READ
+            )
+            .build().let { hiHealthOptions ->
+                val signInHuaweiId: AuthHuaweiId =
+                    HuaweiIdAuthManager.getExtendedAuthResult(hiHealthOptions)
+                HuaweiHiHealth.getDataController(requireContext(), signInHuaweiId)
+            }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -64,6 +96,60 @@ class DashboardFragment @Inject constructor(
         super.onResume()
         viewModel.getLastFoundDevices()
         viewModel.getSelectedDevice()
+        getHiHealthData()
+        readToday()
+    }
+
+    private fun getHiHealthData() {
+        val hiHealthOptions = HiHealthOptions.builder()
+            .addDataType(DataType.DT_CONTINUOUS_STEPS_DELTA, HiHealthOptions.ACCESS_READ)
+            .addDataType(DataType.DT_INSTANTANEOUS_BODY_WEIGHT, HiHealthOptions.ACCESS_READ)
+            .build()
+        val signInHuaweiId = HuaweiIdAuthManager.getExtendedAuthResult(hiHealthOptions)
+        HuaweiHiHealth.getDataController(requireContext(), signInHuaweiId)
+    }
+
+    private fun readToday() {
+        listOf(
+            DataType.DT_CONTINUOUS_STEPS_DELTA,
+            DataType.DT_CONTINUOUS_CALORIES_BURNT,
+            DataType.DT_CONTINUOUS_DISTANCE_DELTA,
+            DataType.DT_CONTINUOUS_SLEEP,
+            DataType.DT_INSTANTANEOUS_HEART_RATE
+        ).map { dataType -> getLatestData(dataType) }
+
+        //TODO: oxygen in blood only possible through dataController.readLatestData(dataType)
+    }
+
+    private fun getLatestData(dataType: DataType) {
+        dataController.readTodaySummation(dataType)
+            .addOnSuccessListener { sampleSet ->
+                "Today's SampleSet retrieved from HMS Core got".logResult()
+                showSampleSet(sampleSet)
+            }
+            .addOnFailureListener { error ->
+                "There was an error retrieving today's data ${error.message}".logResult()
+            }
+    }
+
+    private fun showSampleSet(sampleSet: SampleSet) {
+        sampleSet.samplePoints.map { samplePoint ->
+            when (samplePoint.dataType) {
+                DataType.DT_CONTINUOUS_STEPS_DELTA -> "populate Steps Data in UI".logResult()
+                DataType.DT_CONTINUOUS_CALORIES_BURNT_TOTAL -> "populate Calories Data in UI".logResult()
+                DataType.POLYMERIZE_CONTINUOUS_ACTIVITY_STATISTICS -> "populate Activity Data in UI".logResult()
+                DataType.DT_INSTANTANEOUS_LOCATION_TRACE -> "populate Location Data in UI".logResult()
+                DataType.DT_STATISTICS_SLEEP -> "populate Sleep Data in UI".logResult()
+                DataType.POLYMERIZE_CONTINUOUS_HEART_RATE_STATISTICS -> "populate HeartRate Data in UI".logResult()
+            }
+            logSamplePointsData(samplePoint)
+        }
+    }
+
+    private fun logSamplePointsData(samplePoint: SamplePoint) {
+        samplePoint.dataType.fields.map { field ->
+            "Field: ${field.name}  Value: ${samplePoint.getFieldValue(field)}".logResult()
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

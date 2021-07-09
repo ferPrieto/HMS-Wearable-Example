@@ -15,6 +15,7 @@ import com.fprieto.hms.wearable.databinding.ActivityWearEngineBinding
 import com.huawei.hms.hihealth.HiHealthOptions
 import com.huawei.hms.hihealth.HuaweiHiHealth
 import com.huawei.hms.hihealth.SettingController
+import com.huawei.hms.hihealth.data.DataType
 import com.huawei.hms.hihealth.data.Scopes
 import com.huawei.hms.support.hwid.HuaweiIdAuthManager
 import com.huawei.hms.support.hwid.result.AuthHuaweiId
@@ -28,7 +29,16 @@ import javax.inject.Inject
 
 
 private val hiWearPermissions = arrayOf(Permission.DEVICE_MANAGER, Permission.NOTIFY)
-private const val REQUEST_AUTH = 1002
+private val scopes = arrayOf(
+    Scopes.HEALTHKIT_STEP_READ,
+    Scopes.HEALTHKIT_CALORIES_READ,
+    Scopes.HEALTHKIT_ACTIVITY_READ,
+    Scopes.HEALTHKIT_LOCATION_READ,
+    Scopes.HEALTHKIT_SLEEP_READ,
+    Scopes.HEALTHKIT_HEARTRATE_READ,
+    Scopes.HEALTHKIT_OXYGENSTATURATION_READ,
+    Scopes.HEALTHKIT_ACTIVITY_RECORD_READ
+)
 
 class WearEngineActivity : DaggerAppCompatActivity() {
 
@@ -36,13 +46,33 @@ class WearEngineActivity : DaggerAppCompatActivity() {
         HiWear.getAuthClient(this)
     }
 
-    private val fitnessOptions: HiHealthOptions by lazy {
-        HiHealthOptions.builder().build()
+    private val settingController: SettingController by lazy {
+        HiHealthOptions.builder()
+            .addDataType(DataType.DT_CONTINUOUS_STEPS_DELTA, HiHealthOptions.ACCESS_READ)
+            .addDataType(DataType.DT_CONTINUOUS_CALORIES_BURNT_TOTAL, HiHealthOptions.ACCESS_READ)
+            .addDataType(
+                DataType.POLYMERIZE_CONTINUOUS_ACTIVITY_STATISTICS,
+                HiHealthOptions.ACCESS_READ
+            )
+            .addDataType(DataType.DT_INSTANTANEOUS_LOCATION_TRACE, HiHealthOptions.ACCESS_READ)
+            .addDataType(DataType.DT_STATISTICS_SLEEP, HiHealthOptions.ACCESS_READ)
+            .addDataType(
+                DataType.POLYMERIZE_CONTINUOUS_HEART_RATE_STATISTICS,
+                HiHealthOptions.ACCESS_READ
+            )
+            .addDataType(
+                DataType.POLYMERIZE_CONTINUOUS_HEART_RATE_STATISTICS,
+                HiHealthOptions.ACCESS_READ
+            )
+            .build().let { hiHealthOptions ->
+                val signInHuaweiId: AuthHuaweiId =
+                    HuaweiIdAuthManager.getExtendedAuthResult(hiHealthOptions)
+                HuaweiHiHealth.getSettingController(this, signInHuaweiId)
+            }
     }
 
     private lateinit var binding: ActivityWearEngineBinding
     private lateinit var navController: NavController
-    private lateinit var settingController: SettingController
 
     @Inject
     lateinit var fragmentFactory: FragmentFactory
@@ -55,7 +85,6 @@ class WearEngineActivity : DaggerAppCompatActivity() {
         setContentView(binding.root)
 
         setBottomNavigation()
-        initHealthKitService()
         requestHealthKitAuth()
         checkPermissions()
     }
@@ -69,21 +98,7 @@ class WearEngineActivity : DaggerAppCompatActivity() {
         binding.bottomNavigation.setupWithNavController(navController)
     }
 
-    private fun initHealthKitService() {
-        val signInHuaweiId: AuthHuaweiId = HuaweiIdAuthManager.getExtendedAuthResult(fitnessOptions)
-        settingController = HuaweiHiHealth.getSettingController(this, signInHuaweiId)
-    }
-
     private fun requestHealthKitAuth() {
-        val scopes = arrayOf(
-            Scopes.HEALTHKIT_STEP_READ,
-            Scopes.HEALTHKIT_STEP_WRITE,
-            Scopes.HEALTHKIT_HEIGHTWEIGHT_READ,
-            Scopes.HEALTHKIT_HEIGHTWEIGHT_WRITE,
-            Scopes.HEALTHKIT_HEARTRATE_READ,
-            Scopes.HEALTHKIT_HEARTRATE_WRITE
-        )
-
         val requestAuthorizationIntent: Intent =
             settingController.requestAuthorizationIntent(scopes, true)
 
