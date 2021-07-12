@@ -96,29 +96,16 @@ class DashboardFragment @Inject constructor(
         super.onResume()
         viewModel.getLastFoundDevices()
         viewModel.getSelectedDevice()
-        getHiHealthData()
         readToday()
-    }
-
-    private fun getHiHealthData() {
-        val hiHealthOptions = HiHealthOptions.builder()
-            .addDataType(DataType.DT_CONTINUOUS_STEPS_DELTA, HiHealthOptions.ACCESS_READ)
-            .addDataType(DataType.DT_INSTANTANEOUS_BODY_WEIGHT, HiHealthOptions.ACCESS_READ)
-            .build()
-        val signInHuaweiId = HuaweiIdAuthManager.getExtendedAuthResult(hiHealthOptions)
-        HuaweiHiHealth.getDataController(requireContext(), signInHuaweiId)
     }
 
     private fun readToday() {
         listOf(
             DataType.DT_CONTINUOUS_STEPS_DELTA,
             DataType.DT_CONTINUOUS_CALORIES_BURNT,
-            DataType.DT_CONTINUOUS_DISTANCE_DELTA,
             DataType.DT_CONTINUOUS_SLEEP,
             DataType.DT_INSTANTANEOUS_HEART_RATE
         ).map { dataType -> getLatestData(dataType) }
-
-        //TODO: oxygen in blood only possible through dataController.readLatestData(dataType)
     }
 
     private fun getLatestData(dataType: DataType) {
@@ -130,6 +117,8 @@ class DashboardFragment @Inject constructor(
             .addOnFailureListener { error ->
                 "There was an error retrieving today's data ${error.message}".logResult()
             }
+
+        dataController
     }
 
     private fun showSampleSet(sampleSet: SampleSet) {

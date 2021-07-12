@@ -34,6 +34,9 @@
     <string name="tab_title_dashboard">Dashboard</string>
     <string name="tab_title_messaging">Messaging</string>
     <string name="tab_title_player">Player</string>
+    <string name="dashboard_steps">Steps</string>
+    <string name="heart_rate_dashboard">Heart rate</string>
+    <string name="calories_dashboard">Calories</string>
 
 
 </resources>

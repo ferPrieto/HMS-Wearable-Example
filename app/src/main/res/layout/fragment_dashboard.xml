@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingHorizontal="8dp"
+    android:paddingHorizontal="16dp"
     tools:context=".presentation.ui.WearEngineActivity">
 
     <Button
@@ -17,6 +17,78 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/device_radio_group" />
 
+    <androidx.cardview.widget.CardView
+        android:id="@+id/steps_card"
+        android:layout_width="0dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/get_devices">
+
+        <TextView
+            android:id="@+id/steps_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:drawableEnd="@drawable/ic_steps"
+            android:text="@string/dashboard_steps"
+            android:textAlignment="center" />
+
+        <TextView
+            android:id="@+id/steps_value"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/heart_rate_card"
+        android:layout_width="0dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/steps_card">
+
+        <TextView
+            android:id="@+id/heart_rate_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:drawableEnd="@drawable/ic_heart_rate"
+            android:text="@string/heart_rate_dashboard"
+            android:textAlignment="center" />
+
+        <TextView
+            android:id="@+id/heart_rate_value"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/calories_card"
+        android:layout_width="0dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/heart_rate_card">
+
+        <TextView
+            android:id="@+id/calories_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:drawableEnd="@drawable/ic_calories_burned"
+            android:text="@string/calories_dashboard"
+            android:textAlignment="center" />
+
+        <TextView
+            android:id="@+id/calories_value"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </androidx.cardview.widget.CardView>
+
     <Button
         android:id="@+id/clear_logs"
         android:layout_width="wrap_content"
@@ -28,7 +100,7 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/get_devices" />
+        app:layout_constraintTop_toBottomOf="@+id/calories_card" />
 
     <RadioGroup
         android:id="@+id/device_radio_group"
