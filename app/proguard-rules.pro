@@ -24,4 +24,9 @@
 -keepattributes InnerClasses
 -keepattributes EnclosingMethod
 -keep class com.huawei.hms.wearengine.**{*;}
+-ignorewarnings
+-keepattributes SourceFile,LineNumberTable
+-keep class com.huawei.hianalytics.**{*;}
+-keep class com.huawei.updatesdk.**{*;}
+-keep class com.huawei.hms.**{*;}
 

@@ -8,4 +8,14 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="CardView.Title" parent="@style/Theme.AppCompat">
+        <item name="android:layout_marginStart">@dimen/grid_small</item>
+        <item name="android:layout_marginTop">@dimen/grid_small</item>
+    </style>
+
+    <style name="CardView.Value" parent="@style/Theme.AppCompat">
+        <item name="android:layout_marginEnd">@dimen/grid_small</item>
+        <item name="android:layout_marginBottom">@dimen/grid_small</item>
+        <item name="android:textSize">@dimen/letter_semi_large</item>
+    </style>
 </resources>

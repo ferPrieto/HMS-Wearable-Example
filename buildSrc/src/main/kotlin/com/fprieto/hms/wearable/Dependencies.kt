@@ -21,6 +21,8 @@ object Versions {
     const val agcp = "1.4.2.300"
     const val wearEngine = "5.0.1.301"
     const val hms = "5.0.5.300"
+    const val health = "5.3.0.301"
+    const val hiHealth = "5.1.0.300"
     const val timber = "4.7.1"
     const val gson = "2.8.6"
     const val exoPlayer = "2.10.5"
@@ -91,6 +93,8 @@ object Dependencies {
     object Huawei {
         const val wearengine = "com.huawei.hms:wearengine:${Versions.wearEngine}"
         const val hmsBase = "com.huawei.hms:base:${Versions.hms}"
+        const val health = "com.huawei.hms:health:${Versions.health}"
+        const val hiHealth = "com.huawei.hihealth:hihealthkit:${Versions.hiHealth}"
     }
 
     object ExoPlayer {
