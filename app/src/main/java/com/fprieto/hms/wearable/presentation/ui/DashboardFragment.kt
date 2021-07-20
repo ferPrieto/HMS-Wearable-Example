@@ -102,31 +102,37 @@ class DashboardFragment @Inject constructor(
         super.onResume()
         viewModel.getLastFoundDevices()
         viewModel.getSelectedDevice()
-        readToday()
-        getOxygenSaturationData()
+        readTodaySummation()
+        readLatestData()
     }
 
-    private fun readToday() {
+    private fun readTodaySummation() {
         listOf(
             DataType.DT_CONTINUOUS_STEPS_DELTA,
-            DataType.DT_CONTINUOUS_CALORIES_BURNT,
-            DataType.DT_CONTINUOUS_SLEEP,
-            DataType.DT_INSTANTANEOUS_HEART_RATE
-        ).map { dataType -> getLatestData(dataType) }
+            DataType.DT_CONTINUOUS_CALORIES_BURNT
+        ).map { dataType ->
+            dataController.readTodaySummation(dataType)
+                .addOnSuccessListener { sampleSet ->
+                    "Today's SampleSet retrieved from HMS Core got".logResult()
+                    populateTodaySummationResults(sampleSet)
+                }
+                .addOnFailureListener { error ->
+                    "There was an error retrieving today's data ${error.message}".logResult()
+                }
+        }
     }
 
-    private fun getLatestData(dataType: DataType) {
-        dataController.readTodaySummation(dataType)
-            .addOnSuccessListener { sampleSet ->
-                "Today's SampleSet retrieved from HMS Core got".logResult()
-                showSampleSet(sampleSet)
+    private fun populateTodaySummationResults(sampleSet: SampleSet) {
+        sampleSet.samplePoints.map { samplePoint ->
+            when (samplePoint.dataType) {
+                DataType.DT_CONTINUOUS_STEPS_TOTAL -> populateSteps(samplePoint)
+                DataType.DT_CONTINUOUS_CALORIES_BURNT_TOTAL -> populateCalories(samplePoint)
             }
-            .addOnFailureListener { error ->
-                "There was an error retrieving today's data ${error.message}".logResult()
-            }
+            logTodaySummationResultsData(samplePoint)
+        }
     }
 
-    private fun getOxygenSaturationData() {
+    private fun readLatestData() {
         lifecycleScope.launchWhenResumed {
             try {
                 dataController.readLatestData(
@@ -135,28 +141,16 @@ class DashboardFragment @Inject constructor(
                         HealthDataTypes.DT_INSTANTANEOUS_SPO2
                     )
                 ).await().let { results ->
-
                     results.keys.map { dataType ->
                         when (dataType) {
                             DataType.DT_INSTANTANEOUS_HEART_RATE -> populateHeartRate(results[DataType.DT_INSTANTANEOUS_HEART_RATE])
                             HealthDataTypes.DT_INSTANTANEOUS_SPO2 -> populateOxygenInBlood(results[HealthDataTypes.DT_INSTANTANEOUS_SPO2])
                         }
                     }
-                    "Failed reading Latest Data: ${results.size}".logResult()
                 }
             } catch (e: Exception) {
                 "Failed reading Latest Data: ${e.message}".logError(e)
             }
-        }
-    }
-
-    private fun showSampleSet(sampleSet: SampleSet) {
-        sampleSet.samplePoints.map { samplePoint ->
-            when (samplePoint.dataType) {
-                DataType.DT_CONTINUOUS_STEPS_TOTAL -> populateSteps(samplePoint)
-                DataType.DT_CONTINUOUS_CALORIES_BURNT_TOTAL -> populateCalories(samplePoint)
-            }
-            logSamplePointsData(samplePoint)
         }
     }
 
@@ -176,7 +170,7 @@ class DashboardFragment @Inject constructor(
         binding.oxygenValue.text = samplePoint?.fieldValues?.values?.last().toString()
     }
 
-    private fun logSamplePointsData(samplePoint: SamplePoint) {
+    private fun logTodaySummationResultsData(samplePoint: SamplePoint) {
         samplePoint.dataType.fields.map { field ->
             "Field: ${field.name}  Value: ${samplePoint.getFieldValue(field)}".logResult()
         }
