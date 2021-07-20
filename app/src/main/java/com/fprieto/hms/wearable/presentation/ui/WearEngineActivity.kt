@@ -16,6 +16,7 @@ import com.huawei.hms.hihealth.HiHealthOptions
 import com.huawei.hms.hihealth.HuaweiHiHealth
 import com.huawei.hms.hihealth.SettingController
 import com.huawei.hms.hihealth.data.DataType
+import com.huawei.hms.hihealth.data.HealthDataTypes
 import com.huawei.hms.hihealth.data.Scopes
 import com.huawei.hms.support.hwid.HuaweiIdAuthManager
 import com.huawei.hms.support.hwid.result.AuthHuaweiId
@@ -27,7 +28,6 @@ import dagger.android.support.DaggerAppCompatActivity
 import timber.log.Timber
 import javax.inject.Inject
 
-
 private val hiWearPermissions = arrayOf(Permission.DEVICE_MANAGER, Permission.NOTIFY)
 private val scopes = arrayOf(
     Scopes.HEALTHKIT_STEP_READ,
@@ -37,6 +37,7 @@ private val scopes = arrayOf(
     Scopes.HEALTHKIT_SLEEP_READ,
     Scopes.HEALTHKIT_HEARTRATE_READ,
     Scopes.HEALTHKIT_OXYGENSTATURATION_READ,
+    Scopes.HEALTHKIT_BLOODGLUCOSE_READ,
     Scopes.HEALTHKIT_ACTIVITY_RECORD_READ
 )
 
@@ -62,6 +63,14 @@ class WearEngineActivity : DaggerAppCompatActivity() {
             )
             .addDataType(
                 DataType.POLYMERIZE_CONTINUOUS_HEART_RATE_STATISTICS,
+                HiHealthOptions.ACCESS_READ
+            )
+            .addDataType(
+                HealthDataTypes.DT_INSTANTANEOUS_BLOOD_GLUCOSE,
+                HiHealthOptions.ACCESS_READ
+            )
+            .addDataType(
+                HealthDataTypes.DT_INSTANTANEOUS_SPO2,
                 HiHealthOptions.ACCESS_READ
             )
             .build().let { hiHealthOptions ->

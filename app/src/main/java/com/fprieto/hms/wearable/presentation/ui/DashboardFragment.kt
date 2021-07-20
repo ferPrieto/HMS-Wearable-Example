@@ -23,6 +23,7 @@ import com.huawei.hms.hihealth.DataController
 import com.huawei.hms.hihealth.HiHealthOptions
 import com.huawei.hms.hihealth.HuaweiHiHealth
 import com.huawei.hms.hihealth.data.DataType
+import com.huawei.hms.hihealth.data.HealthDataTypes
 import com.huawei.hms.hihealth.data.SamplePoint
 import com.huawei.hms.hihealth.data.SampleSet
 import com.huawei.hms.support.hwid.HuaweiIdAuthManager
@@ -75,6 +76,11 @@ class DashboardFragment @Inject constructor(
                 DataType.POLYMERIZE_CONTINUOUS_HEART_RATE_STATISTICS,
                 HiHealthOptions.ACCESS_READ
             )
+            .addDataType(
+                HealthDataTypes.DT_INSTANTANEOUS_BLOOD_GLUCOSE,
+                HiHealthOptions.ACCESS_READ
+            )
+            .addDataType(HealthDataTypes.DT_INSTANTANEOUS_SPO2, HiHealthOptions.ACCESS_READ)
             .build().let { hiHealthOptions ->
                 val signInHuaweiId: AuthHuaweiId =
                     HuaweiIdAuthManager.getExtendedAuthResult(hiHealthOptions)
@@ -97,6 +103,7 @@ class DashboardFragment @Inject constructor(
         viewModel.getLastFoundDevices()
         viewModel.getSelectedDevice()
         readToday()
+        getOxigenSaturationData()
     }
 
     private fun readToday() {
@@ -117,8 +124,22 @@ class DashboardFragment @Inject constructor(
             .addOnFailureListener { error ->
                 "There was an error retrieving today's data ${error.message}".logResult()
             }
+    }
 
-        dataController
+    private fun getOxigenSaturationData() {
+        lifecycleScope.launchWhenResumed {
+            try {
+                dataController.readLatestData(
+                    listOf(
+                        HealthDataTypes.DT_INSTANTANEOUS_SPO2
+                    )
+                ).await().let { results ->
+                    "Found the next results: ${results.size}".logResult()
+                }
+            } catch (e: Exception) {
+                "Failed reading Latest Data: ${e.message}".logError(e)
+            }
+        }
     }
 
     private fun showSampleSet(sampleSet: SampleSet) {
