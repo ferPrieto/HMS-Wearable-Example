@@ -37,6 +37,7 @@
     <string name="dashboard_steps">Steps</string>
     <string name="heart_rate_dashboard">Heart rate</string>
     <string name="calories_dashboard">Calories</string>
+    <string name="oxygen_dashboard">SpO2</string>
 
 
 </resources>

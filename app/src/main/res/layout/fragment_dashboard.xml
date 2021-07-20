@@ -75,7 +75,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_heart_rate" />
+                android:src="@drawable/ic_heartrate" />
 
             <TextView
                 android:id="@+id/heart_rate_value"
@@ -132,7 +132,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
-                android:text="@string/calories_dashboard" />
+                android:text="@string/oxygen_dashboard" />
 
             <ImageView
                 android:id="@+id/oxygen_image"
