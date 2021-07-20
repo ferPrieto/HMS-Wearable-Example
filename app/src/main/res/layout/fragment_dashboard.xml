@@ -8,14 +8,14 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingHorizontal="16dp"
+        android:paddingHorizontal="@dimen/grid_semi_large"
         tools:context=".presentation.ui.WearEngineActivity">
 
         <Button
             android:id="@+id/get_devices"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/grid_semi_large"
             android:text="@string/dashboard_get_devices"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -25,8 +25,8 @@
             android:id="@+id/steps_card"
             android:layout_width="0dp"
             android:layout_height="100dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
+            android:layout_marginTop="@dimen/grid_semi_large"
+            android:layout_marginEnd="@dimen/grid_semi_large"
             app:layout_constraintEnd_toStartOf="@id/heart_rate_card"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/get_devices">
@@ -58,7 +58,7 @@
             android:id="@+id/heart_rate_card"
             android:layout_width="0dp"
             android:layout_height="100dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/grid_semi_large"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/steps_card"
             app:layout_constraintTop_toBottomOf="@id/get_devices">
@@ -90,8 +90,8 @@
             android:id="@+id/calories_card"
             android:layout_width="0dp"
             android:layout_height="100dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
+            android:layout_marginTop="@dimen/grid_semi_large"
+            android:layout_marginEnd="@dimen/grid_semi_large"
             app:layout_constraintEnd_toStartOf="@+id/oxygen_card"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/heart_rate_card">
@@ -122,7 +122,7 @@
             android:id="@+id/oxygen_card"
             android:layout_width="0dp"
             android:layout_height="100dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/grid_semi_large"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/calories_card"
             app:layout_constraintTop_toBottomOf="@id/heart_rate_card">
@@ -153,7 +153,7 @@
             android:id="@+id/clear_logs"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/grid_semi_large"
             android:layout_weight="1"
             android:text="@string/dashboard_clear_log"
             android:textAllCaps="false"
@@ -174,7 +174,7 @@
             android:id="@+id/debug_mode_switch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
+            android:layout_marginEnd="@dimen/grid_semi_large"
             android:text="@string/dashboard_toggle_text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

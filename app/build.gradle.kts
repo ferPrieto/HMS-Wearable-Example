@@ -89,6 +89,7 @@ dependencies {
     implementation(Dependencies.Huawei.wearengine)
     implementation(Dependencies.Huawei.hmsBase)
     implementation(Dependencies.Huawei.health)
+    implementation(Dependencies.Huawei.hiHealth)
 
     implementation(Dependencies.ExoPlayer.core)
     implementation(Dependencies.ExoPlayer.ui)

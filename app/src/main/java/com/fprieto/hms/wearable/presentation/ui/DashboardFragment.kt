@@ -19,7 +19,9 @@ import com.fprieto.hms.wearable.databinding.ViewLogsBinding
 import com.fprieto.hms.wearable.extensions.await
 import com.fprieto.hms.wearable.presentation.vm.DashboardViewModel
 import com.fprieto.hms.wearable.presentation.vm.observeEvent
+import com.huawei.hihealthkit.data.store.HiHealthDataStore
 import com.huawei.hms.hihealth.DataController
+import com.huawei.hms.hihealth.HiHealthKitClient
 import com.huawei.hms.hihealth.HiHealthOptions
 import com.huawei.hms.hihealth.HuaweiHiHealth
 import com.huawei.hms.hihealth.data.DataType
