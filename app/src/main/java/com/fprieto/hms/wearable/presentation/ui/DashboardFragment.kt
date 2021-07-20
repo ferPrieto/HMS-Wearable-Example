@@ -103,7 +103,7 @@ class DashboardFragment @Inject constructor(
         viewModel.getLastFoundDevices()
         viewModel.getSelectedDevice()
         readToday()
-        getOxigenSaturationData()
+        getOxygenSaturationData()
     }
 
     private fun readToday() {
@@ -126,15 +126,23 @@ class DashboardFragment @Inject constructor(
             }
     }
 
-    private fun getOxigenSaturationData() {
+    private fun getOxygenSaturationData() {
         lifecycleScope.launchWhenResumed {
             try {
                 dataController.readLatestData(
                     listOf(
+                        DataType.DT_INSTANTANEOUS_HEART_RATE,
                         HealthDataTypes.DT_INSTANTANEOUS_SPO2
                     )
                 ).await().let { results ->
-                    "Found the next results: ${results.size}".logResult()
+
+                    results.keys.map { dataType ->
+                        when (dataType) {
+                            DataType.DT_INSTANTANEOUS_HEART_RATE -> populateHeartRate(results[DataType.DT_INSTANTANEOUS_HEART_RATE])
+                            HealthDataTypes.DT_INSTANTANEOUS_SPO2 -> populateOxygenInBlood(results[HealthDataTypes.DT_INSTANTANEOUS_SPO2])
+                        }
+                    }
+                    "Failed reading Latest Data: ${results.size}".logResult()
                 }
             } catch (e: Exception) {
                 "Failed reading Latest Data: ${e.message}".logError(e)
@@ -145,15 +153,27 @@ class DashboardFragment @Inject constructor(
     private fun showSampleSet(sampleSet: SampleSet) {
         sampleSet.samplePoints.map { samplePoint ->
             when (samplePoint.dataType) {
-                DataType.DT_CONTINUOUS_STEPS_DELTA -> "populate Steps Data in UI".logResult()
-                DataType.DT_CONTINUOUS_CALORIES_BURNT_TOTAL -> "populate Calories Data in UI".logResult()
-                DataType.POLYMERIZE_CONTINUOUS_ACTIVITY_STATISTICS -> "populate Activity Data in UI".logResult()
-                DataType.DT_INSTANTANEOUS_LOCATION_TRACE -> "populate Location Data in UI".logResult()
-                DataType.DT_STATISTICS_SLEEP -> "populate Sleep Data in UI".logResult()
-                DataType.POLYMERIZE_CONTINUOUS_HEART_RATE_STATISTICS -> "populate HeartRate Data in UI".logResult()
+                DataType.DT_CONTINUOUS_STEPS_TOTAL -> populateSteps(samplePoint)
+                DataType.DT_CONTINUOUS_CALORIES_BURNT_TOTAL -> populateCalories(samplePoint)
             }
             logSamplePointsData(samplePoint)
         }
+    }
+
+    private fun populateSteps(samplePoint: SamplePoint) {
+        binding.stepsValue.text = samplePoint.fieldValues.values.first().toString()
+    }
+
+    private fun populateCalories(samplePoint: SamplePoint) {
+        binding.caloriesValue.text = samplePoint.fieldValues.values.first().toString()
+    }
+
+    private fun populateHeartRate(samplePoint: SamplePoint?) {
+        binding.heartRateValue.text = samplePoint?.fieldValues?.values?.first().toString()
+    }
+
+    private fun populateOxygenInBlood(samplePoint: SamplePoint?) {
+        binding.oxygenValue.text = samplePoint?.fieldValues?.values?.last().toString()
     }
 
     private fun logSamplePointsData(samplePoint: SamplePoint) {
