@@ -33,6 +33,7 @@
 
             <TextView
                 android:id="@+id/steps_title"
+                style="@style/CardView.Title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
@@ -43,13 +44,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_steps" />
+                android:src="@drawable/ic_steps"
+                app:tint="@color/card_icon" />
 
             <TextView
                 android:id="@+id/steps_value"
+                android:layout_margin="@dimen/grid_small"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="end"
+                style="@style/CardView.Value"
                 android:gravity="bottom|end" />
 
         </androidx.cardview.widget.CardView>
@@ -65,6 +69,7 @@
 
             <TextView
                 android:id="@+id/heart_rate_title"
+                style="@style/CardView.Title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
@@ -75,6 +80,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
+                app:tint="@color/card_icon"
                 android:src="@drawable/ic_heartrate" />
 
             <TextView
@@ -82,8 +88,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="end"
+                style="@style/CardView.Value"
                 android:gravity="bottom|end" />
-
         </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView
@@ -98,6 +104,7 @@
 
             <TextView
                 android:id="@+id/calories_title"
+                style="@style/CardView.Title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
@@ -108,6 +115,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
+                app:tint="@color/card_icon"
                 android:src="@drawable/ic_calories_burned" />
 
             <TextView
@@ -115,6 +123,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="end"
+                style="@style/CardView.Value"
                 android:gravity="bottom|end" />
         </androidx.cardview.widget.CardView>
 
@@ -129,6 +138,7 @@
 
             <TextView
                 android:id="@+id/oxygen_title"
+                style="@style/CardView.Title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
@@ -139,6 +149,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
+                app:tint="@color/card_icon"
                 android:src="@drawable/ic_oxygen" />
 
             <TextView
@@ -146,6 +157,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="end"
+                style="@style/CardView.Value"
                 android:gravity="bottom|end" />
         </androidx.cardview.widget.CardView>
 
