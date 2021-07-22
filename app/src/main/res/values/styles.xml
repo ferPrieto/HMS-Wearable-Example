@@ -18,4 +18,9 @@
         <item name="android:layout_marginBottom">@dimen/grid_small</item>
         <item name="android:textSize">@dimen/letter_semi_large</item>
     </style>
+
+    <style name="TextButton" parent="@style/Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textSize">@dimen/letter_semi_large</item>
+    </style>
 </resources>
