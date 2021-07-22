@@ -30,6 +30,7 @@
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
         android:text="@string/messaging_button_ping"
+        style="@style/TextButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/connected_device" />
@@ -40,6 +41,7 @@
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
         android:text="@string/messaging_send_message"
+        style="@style/TextButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ping_device" />
@@ -50,6 +52,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="@string/messaging_take_photo"
+        style="@style/TextButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/send_message" />
@@ -60,6 +63,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="@string/messaging_take_photo"
+        style="@style/TextButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/send_message" />
@@ -70,6 +74,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="@string/messaging_clear_log"
+        style="@style/TextButton"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

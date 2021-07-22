@@ -13,10 +13,13 @@
 
         <Button
             android:id="@+id/get_devices"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/grid_semi_large"
+            android:layout_marginStart="@dimen/grid_large"
+            android:layout_marginEnd="@dimen/grid_large"
             android:text="@string/dashboard_get_devices"
+            style="@style/TextButton"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/device_radio_group" />
@@ -25,7 +28,7 @@
             android:id="@+id/steps_card"
             android:layout_width="0dp"
             android:layout_height="100dp"
-            android:layout_marginTop="@dimen/grid_semi_large"
+            android:layout_marginTop="@dimen/grid_large"
             android:layout_marginEnd="@dimen/grid_semi_large"
             app:layout_constraintEnd_toStartOf="@id/heart_rate_card"
             app:layout_constraintStart_toStartOf="parent"
@@ -62,7 +65,7 @@
             android:id="@+id/heart_rate_card"
             android:layout_width="0dp"
             android:layout_height="100dp"
-            android:layout_marginTop="@dimen/grid_semi_large"
+            android:layout_marginTop="@dimen/grid_large"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/steps_card"
             app:layout_constraintTop_toBottomOf="@id/get_devices">
@@ -169,6 +172,7 @@
             android:layout_weight="1"
             android:text="@string/dashboard_clear_log"
             android:textAllCaps="false"
+            style="@style/TextButton"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
