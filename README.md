@@ -29,7 +29,7 @@ In order to be able to communicate with a Huawei Smart Watch, it will be necessa
 ## Demo
 
 <p align="center">
-  <img src="art/Demo-SpaceX.gif">
+  <img src="art/Demo-HMS-Wearable-Example.gif">
 </p>
 
 
