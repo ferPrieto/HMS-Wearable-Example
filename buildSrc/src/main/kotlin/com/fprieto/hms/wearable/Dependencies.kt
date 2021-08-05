@@ -21,7 +21,7 @@ object Versions {
     const val agcp = "1.4.2.300"
     const val wearEngine = "5.0.1.301"
     const val hms = "5.0.5.300"
-    const val health = "5.3.0.301"
+    const val health = "6.0.0.300"
     const val hiHealth = "5.1.0.300"
     const val timber = "4.7.1"
     const val gson = "2.8.6"

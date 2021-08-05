@@ -51,8 +51,8 @@ class MessagingFragment @Inject constructor(
     private lateinit var viewLogsBinding: ViewLogsBinding
 
     private val credentialsProvider: CredentialsProvider = CredentialsProvider()
-    private lateinit var sendCallback: SendCallback
 
+    private var sendCallback: SendCallback? = null
     private var selectedDevice: Device? = null
         set(value) {
             field = value
@@ -104,6 +104,12 @@ class MessagingFragment @Inject constructor(
     override fun onResume() {
         super.onResume()
         viewModel.getSelectedDevice()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sendCallback = null
+        selectedDevice = null
     }
 
     override fun onCreateView(
@@ -241,7 +247,7 @@ class MessagingFragment @Inject constructor(
         }
     }
 
-    private fun buildFileMessageBuilderAndSend(file: File, sendCallback: SendCallback) {
+    private fun buildFileMessageBuilderAndSend(file: File, sendCallback: SendCallback?) {
         Message.Builder()
             .setPayload(file)
             .build().let { message ->

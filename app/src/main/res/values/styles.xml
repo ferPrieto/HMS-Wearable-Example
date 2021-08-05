@@ -23,4 +23,8 @@
         <item name="android:textAllCaps">true</item>
         <item name="android:textSize">@dimen/letter_semi_large</item>
     </style>
+
+    <style name="progressBar" parent="@style/Theme.AppCompat">
+        <item name="colorAccent">@color/card_icon</item>
+    </style>
 </resources>
