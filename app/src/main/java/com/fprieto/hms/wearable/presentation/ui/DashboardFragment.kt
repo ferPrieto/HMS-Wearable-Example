@@ -19,22 +19,20 @@ import com.fprieto.hms.wearable.databinding.ViewLogsBinding
 import com.fprieto.hms.wearable.extensions.await
 import com.fprieto.hms.wearable.presentation.vm.DashboardViewModel
 import com.fprieto.hms.wearable.presentation.vm.observeEvent
-import com.huawei.hihealthkit.data.store.HiHealthDataStore
 import com.huawei.hms.hihealth.DataController
-import com.huawei.hms.hihealth.HiHealthKitClient
-import com.huawei.hms.hihealth.HiHealthOptions
 import com.huawei.hms.hihealth.HuaweiHiHealth
 import com.huawei.hms.hihealth.data.DataType
+import com.huawei.hms.hihealth.data.DataType.*
 import com.huawei.hms.hihealth.data.HealthDataTypes
 import com.huawei.hms.hihealth.data.SamplePoint
 import com.huawei.hms.hihealth.data.SampleSet
-import com.huawei.hms.support.hwid.HuaweiIdAuthManager
-import com.huawei.hms.support.hwid.result.AuthHuaweiId
 import com.huawei.wearengine.HiWear
 import com.huawei.wearengine.device.Device
 import com.huawei.wearengine.device.DeviceClient
+import com.huawei.wearengine.p2p.Message
 import com.huawei.wearengine.p2p.P2pClient
 import com.huawei.wearengine.p2p.Receiver
+import com.huawei.wearengine.p2p.SendCallback
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -49,6 +47,8 @@ class DashboardFragment @Inject constructor(
     private lateinit var viewLogsBinding: ViewLogsBinding
     private val credentialsProvider: CredentialsProvider = CredentialsProvider()
 
+    private var sendCallback: SendCallback? = null
+
     private val p2pClient: P2pClient by lazy {
         HiWear.getP2pClient(context).apply {
             setPeerPkgName(credentialsProvider.getPeerPkgName())
@@ -61,33 +61,7 @@ class DashboardFragment @Inject constructor(
     }
 
     private val dataController: DataController by lazy {
-        HiHealthOptions.builder()
-            .addDataType(DataType.DT_CONTINUOUS_STEPS_DELTA, HiHealthOptions.ACCESS_READ)
-            .addDataType(DataType.DT_CONTINUOUS_CALORIES_BURNT_TOTAL, HiHealthOptions.ACCESS_READ)
-            .addDataType(
-                DataType.POLYMERIZE_CONTINUOUS_ACTIVITY_STATISTICS,
-                HiHealthOptions.ACCESS_READ
-            )
-            .addDataType(DataType.DT_INSTANTANEOUS_LOCATION_TRACE, HiHealthOptions.ACCESS_READ)
-            .addDataType(DataType.DT_STATISTICS_SLEEP, HiHealthOptions.ACCESS_READ)
-            .addDataType(
-                DataType.POLYMERIZE_CONTINUOUS_HEART_RATE_STATISTICS,
-                HiHealthOptions.ACCESS_READ
-            )
-            .addDataType(
-                DataType.POLYMERIZE_CONTINUOUS_HEART_RATE_STATISTICS,
-                HiHealthOptions.ACCESS_READ
-            )
-            .addDataType(
-                HealthDataTypes.DT_INSTANTANEOUS_BLOOD_GLUCOSE,
-                HiHealthOptions.ACCESS_READ
-            )
-            .addDataType(HealthDataTypes.DT_INSTANTANEOUS_SPO2, HiHealthOptions.ACCESS_READ)
-            .build().let { hiHealthOptions ->
-                val signInHuaweiId: AuthHuaweiId =
-                    HuaweiIdAuthManager.getExtendedAuthResult(hiHealthOptions)
-                HuaweiHiHealth.getDataController(requireContext(), signInHuaweiId)
-            }
+        HuaweiHiHealth.getDataController(requireContext())
     }
 
     override fun onCreateView(
@@ -104,78 +78,11 @@ class DashboardFragment @Inject constructor(
         super.onResume()
         viewModel.getLastFoundDevices()
         viewModel.getSelectedDevice()
-        readTodaySummation()
-        readLatestData()
     }
 
-    private fun readTodaySummation() {
-        listOf(
-            DataType.DT_CONTINUOUS_STEPS_DELTA,
-            DataType.DT_CONTINUOUS_CALORIES_BURNT
-        ).map { dataType ->
-            dataController.readTodaySummation(dataType)
-                .addOnSuccessListener { sampleSet ->
-                    "Today's SampleSet retrieved from HMS Core got".logResult()
-                    populateTodaySummationResults(sampleSet)
-                }
-                .addOnFailureListener { error ->
-                    "There was an error retrieving today's data ${error.message}".logResult()
-                }
-        }
-    }
-
-    private fun populateTodaySummationResults(sampleSet: SampleSet) {
-        sampleSet.samplePoints.map { samplePoint ->
-            when (samplePoint.dataType) {
-                DataType.DT_CONTINUOUS_STEPS_TOTAL -> populateSteps(samplePoint)
-                DataType.DT_CONTINUOUS_CALORIES_BURNT_TOTAL -> populateCalories(samplePoint)
-            }
-            logTodaySummationResultsData(samplePoint)
-        }
-    }
-
-    private fun readLatestData() {
-        lifecycleScope.launchWhenResumed {
-            try {
-                dataController.readLatestData(
-                    listOf(
-                        DataType.DT_INSTANTANEOUS_HEART_RATE,
-                        HealthDataTypes.DT_INSTANTANEOUS_SPO2
-                    )
-                ).await().let { results ->
-                    results.keys.map { dataType ->
-                        when (dataType) {
-                            DataType.DT_INSTANTANEOUS_HEART_RATE -> populateHeartRate(results[DataType.DT_INSTANTANEOUS_HEART_RATE])
-                            HealthDataTypes.DT_INSTANTANEOUS_SPO2 -> populateOxygenInBlood(results[HealthDataTypes.DT_INSTANTANEOUS_SPO2])
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                "Failed reading Latest Data: ${e.message}".logError(e)
-            }
-        }
-    }
-
-    private fun populateSteps(samplePoint: SamplePoint) {
-        binding.stepsValue.text = samplePoint.fieldValues.values.first().toString()
-    }
-
-    private fun populateCalories(samplePoint: SamplePoint) {
-        binding.caloriesValue.text = samplePoint.fieldValues.values.first().toString()
-    }
-
-    private fun populateHeartRate(samplePoint: SamplePoint?) {
-        binding.heartRateValue.text = samplePoint?.fieldValues?.values?.first().toString()
-    }
-
-    private fun populateOxygenInBlood(samplePoint: SamplePoint?) {
-        binding.oxygenValue.text = samplePoint?.fieldValues?.values?.last().toString()
-    }
-
-    private fun logTodaySummationResultsData(samplePoint: SamplePoint) {
-        samplePoint.dataType.fields.map { field ->
-            "Field: ${field.name}  Value: ${samplePoint.getFieldValue(field)}".logResult()
-        }
+    override fun onPause() {
+        super.onPause()
+        sendCallback = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -257,9 +164,9 @@ class DashboardFragment @Inject constructor(
         }
 
         viewModel.selectedDevice.observeEvent(this) { device ->
-            device?.let {
-                registerP2pClientReceiver(device)
-            }
+            device.uuid?.let { registerP2pClientReceiver(device) }
+            readTodaySummation(device)
+            readLatestData(device)
         }
     }
 
@@ -271,6 +178,7 @@ class DashboardFragment @Inject constructor(
                         .addOnSuccessListener {
                             "Register receiver listener succeed!".logResult()
                             radioButton.isChecked = true
+                            initResultCallbackAndSender(device)
                         }
                         .addOnFailureListener {
                             "Register receiver listener failed!".logError(it)
@@ -286,6 +194,183 @@ class DashboardFragment @Inject constructor(
 
     private fun getRadioButtonBy(uuId: String): RadioButton =
         binding.deviceRadioGroup.findViewWithTag(uuId)
+
+    private fun readTodaySummation(device: Device) {
+        listOf(
+            DT_CONTINUOUS_STEPS_DELTA,
+            DT_CONTINUOUS_CALORIES_BURNT
+        ).map { dataType ->
+            try {
+                dataController.readTodaySummation(dataType)
+                    .addOnSuccessListener { sampleSet ->
+                        showTodaySummationData(dataType, sampleSet, device)
+                    }
+                    .addOnFailureListener { error ->
+                        "There was an error retrieving Today's Summation ${error.message}".logResult()
+                    }
+            } catch (e: Exception) {
+                "Failed reading Today's Summation: ${e.message}".logError(e)
+            }
+        }
+    }
+
+    private fun showTodaySummationData(
+        dataType: DataType?,
+        sampleSet: SampleSet,
+        device: Device
+    ) {
+        if (sampleSet.isEmpty) {
+            showZeroValue(dataType, device)
+        } else {
+            populateTodaySummationResults(sampleSet, device)
+        }
+    }
+
+    private fun showZeroValue(dataType: DataType?, device: Device) {
+        when (dataType) {
+            DT_CONTINUOUS_STEPS_TOTAL -> {
+                sendHealthDataToConnectedDevice(null, HealthData.Steps, device)
+                populateSteps(null)
+            }
+            DT_CONTINUOUS_CALORIES_BURNT_TOTAL -> {
+                sendHealthDataToConnectedDevice(null, HealthData.Calories, device)
+                populateCalories(null)
+            }
+        }
+    }
+
+    private fun populateTodaySummationResults(sampleSet: SampleSet, device: Device) {
+        sampleSet.samplePoints.map { samplePoint ->
+            "Today's SampleSet for ${samplePoint.dataType} retrieved from HMS Core got".logResult()
+            when (samplePoint.dataType) {
+                DT_CONTINUOUS_STEPS_TOTAL -> {
+                    sendHealthDataToConnectedDevice(samplePoint, HealthData.Steps, device)
+                    populateSteps(samplePoint)
+                }
+                DT_CONTINUOUS_CALORIES_BURNT_TOTAL -> {
+                    sendHealthDataToConnectedDevice(samplePoint, HealthData.Calories, device)
+                    populateCalories(samplePoint)
+                }
+            }
+            logTodaySummationResultsData(samplePoint)
+        }
+    }
+
+    private fun readLatestData(device: Device) {
+        lifecycleScope.launchWhenResumed {
+            try {
+                dataController.readLatestData(
+                    listOf(
+                        DT_INSTANTANEOUS_HEART_RATE,
+                        HealthDataTypes.DT_INSTANTANEOUS_SPO2
+                    )
+                ).await().let { results ->
+                    results.keys.map { dataType ->
+                        when (dataType) {
+                            DT_INSTANTANEOUS_HEART_RATE -> {
+                                sendHealthDataToConnectedDevice(
+                                    results[DT_INSTANTANEOUS_HEART_RATE],
+                                    HealthData.HeartRate,
+                                    device
+                                )
+                                populateHeartRate(results[DT_INSTANTANEOUS_HEART_RATE])
+                            }
+                            HealthDataTypes.DT_INSTANTANEOUS_SPO2 -> {
+                                sendHealthDataToConnectedDevice(
+                                    results[DT_INSTANTANEOUS_HEART_RATE],
+                                    HealthData.Oxygen,
+                                    device
+                                )
+                                populateOxygenInBlood(results[HealthDataTypes.DT_INSTANTANEOUS_SPO2])
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                "Failed reading Latest Data: ${e.message}".logError(e)
+            }
+        }
+    }
+
+    private fun populateSteps(samplePoint: SamplePoint?) {
+        binding.stepsProgress.isVisible = false
+        binding.stepsValue.isVisible = true
+        samplePoint?.let {
+            binding.stepsValue.text = it.fieldValues.values.first().toString()
+        } ?: run {
+            binding.stepsValue.text = "0"
+        }
+    }
+
+    private fun populateCalories(samplePoint: SamplePoint?) {
+        binding.caloriesProgress.isVisible = false
+        binding.caloriesValue.isVisible = true
+        samplePoint?.let {
+            binding.caloriesValue.text = it.fieldValues.values.first().toString()
+        } ?: run {
+            binding.caloriesValue.text = "0"
+        }
+    }
+
+    private fun populateHeartRate(samplePoint: SamplePoint?) {
+        binding.heartRateProgress.isVisible = false
+        binding.heartRateValue.isVisible = true
+        binding.heartRateValue.text = samplePoint?.fieldValues?.values?.first().toString()
+    }
+
+    private fun populateOxygenInBlood(samplePoint: SamplePoint?) {
+        binding.oxygenProgress.isVisible = false
+        binding.oxygenValue.isVisible = true
+        binding.oxygenValue.text = samplePoint?.fieldValues?.values?.last().toString()
+    }
+
+    private fun logTodaySummationResultsData(samplePoint: SamplePoint) {
+        samplePoint.dataType.fields.map { field ->
+            "Field: ${field.name}  Value: ${samplePoint.getFieldValue(field)}".logResult()
+        }
+    }
+
+    private fun getPayload(samplePoint: SamplePoint?, healthData: HealthData): ByteArray =
+        when (healthData) {
+            HealthData.Calories -> "Calories"
+            HealthData.HeartRate -> "HeartRate"
+            HealthData.Steps -> "Steps"
+            else -> "Oxygen"
+        }.let { healthDataType ->
+            "$healthDataType - ${samplePoint?.fieldValues?.values?.first().toString()}"
+                .toByteArray()
+        }
+
+    private fun sendHealthDataToConnectedDevice(
+        samplePoint: SamplePoint?,
+        healthData: HealthData,
+        device: Device
+    ) {
+        device.uuid?.let {
+            Message.Builder()
+                .setPayload(getPayload(samplePoint, healthData))
+                .build().let { message ->
+                    p2pClient.send(device, message, sendCallback).addOnSuccessListener {
+                        "Sent message to ${device.name}'s ${credentialsProvider.getPeerPkgName()}".logResult()
+                    }.addOnFailureListener {
+                        "Send message to ${device.name}'s ${credentialsProvider.getPeerPkgName()} failed".logResult()
+                    }
+                }
+        }
+    }
+
+    private fun initResultCallbackAndSender(device: Device) {
+        sendCallback = object : SendCallback {
+            override fun onSendResult(resultCode: Int) {
+                "Send message to ${device.name}'s ${credentialsProvider.getPeerPkgName()} Result: $resultCode".logResult()
+            }
+
+            override fun onSendProgress(progress: Long) {
+                "Send message to ${device.name}'s ${credentialsProvider.getPeerPkgName()} Progress: $progress".logResult()
+            }
+        }
+        "Send HealthData Callback Registered!".logResult()
+    }
 
     private fun String.logResult() {
         appendOnOutputView(this)
@@ -304,5 +389,9 @@ class DashboardFragment @Inject constructor(
                 viewLogsBinding.scrollView.fullScroll(View.FOCUS_DOWN)
             }
         }
+    }
+
+    enum class HealthData {
+        Calories, Steps, HeartRate, Oxygen
     }
 }

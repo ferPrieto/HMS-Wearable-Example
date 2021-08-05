@@ -12,14 +12,9 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.fprieto.hms.wearable.R
 import com.fprieto.hms.wearable.databinding.ActivityWearEngineBinding
-import com.huawei.hms.hihealth.HiHealthOptions
 import com.huawei.hms.hihealth.HuaweiHiHealth
 import com.huawei.hms.hihealth.SettingController
-import com.huawei.hms.hihealth.data.DataType
-import com.huawei.hms.hihealth.data.HealthDataTypes
 import com.huawei.hms.hihealth.data.Scopes
-import com.huawei.hms.support.hwid.HuaweiIdAuthManager
-import com.huawei.hms.support.hwid.result.AuthHuaweiId
 import com.huawei.wearengine.HiWear
 import com.huawei.wearengine.auth.AuthCallback
 import com.huawei.wearengine.auth.AuthClient
@@ -48,36 +43,7 @@ class WearEngineActivity : DaggerAppCompatActivity() {
     }
 
     private val settingController: SettingController by lazy {
-        HiHealthOptions.builder()
-            .addDataType(DataType.DT_CONTINUOUS_STEPS_DELTA, HiHealthOptions.ACCESS_READ)
-            .addDataType(DataType.DT_CONTINUOUS_CALORIES_BURNT_TOTAL, HiHealthOptions.ACCESS_READ)
-            .addDataType(
-                DataType.POLYMERIZE_CONTINUOUS_ACTIVITY_STATISTICS,
-                HiHealthOptions.ACCESS_READ
-            )
-            .addDataType(DataType.DT_INSTANTANEOUS_LOCATION_TRACE, HiHealthOptions.ACCESS_READ)
-            .addDataType(DataType.DT_STATISTICS_SLEEP, HiHealthOptions.ACCESS_READ)
-            .addDataType(
-                DataType.POLYMERIZE_CONTINUOUS_HEART_RATE_STATISTICS,
-                HiHealthOptions.ACCESS_READ
-            )
-            .addDataType(
-                DataType.POLYMERIZE_CONTINUOUS_HEART_RATE_STATISTICS,
-                HiHealthOptions.ACCESS_READ
-            )
-            .addDataType(
-                HealthDataTypes.DT_INSTANTANEOUS_BLOOD_GLUCOSE,
-                HiHealthOptions.ACCESS_READ
-            )
-            .addDataType(
-                HealthDataTypes.DT_INSTANTANEOUS_SPO2,
-                HiHealthOptions.ACCESS_READ
-            )
-            .build().let { hiHealthOptions ->
-                val signInHuaweiId: AuthHuaweiId =
-                    HuaweiIdAuthManager.getExtendedAuthResult(hiHealthOptions)
-                HuaweiHiHealth.getSettingController(this, signInHuaweiId)
-            }
+        HuaweiHiHealth.getSettingController(this)
     }
 
     private lateinit var binding: ActivityWearEngineBinding

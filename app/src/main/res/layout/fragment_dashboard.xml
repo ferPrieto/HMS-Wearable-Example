@@ -13,13 +13,13 @@
 
         <Button
             android:id="@+id/get_devices"
+            style="@style/TextButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/grid_semi_large"
             android:layout_marginStart="@dimen/grid_large"
+            android:layout_marginTop="@dimen/grid_semi_large"
             android:layout_marginEnd="@dimen/grid_large"
             android:text="@string/dashboard_get_devices"
-            style="@style/TextButton"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/device_radio_group" />
@@ -50,13 +50,22 @@
                 android:src="@drawable/ic_steps"
                 app:tint="@color/card_icon" />
 
+            <ProgressBar
+                android:id="@+id/steps_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:gravity="bottom|end"
+                android:theme="@style/progressBar" />
+
             <TextView
                 android:id="@+id/steps_value"
-                android:layout_margin="@dimen/grid_small"
+                style="@style/CardView.Value"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="end"
-                style="@style/CardView.Value"
+                android:visibility="gone"
+                android:layout_margin="@dimen/grid_small"
                 android:gravity="bottom|end" />
 
         </androidx.cardview.widget.CardView>
@@ -83,15 +92,24 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                app:tint="@color/card_icon"
-                android:src="@drawable/ic_heartrate" />
+                android:src="@drawable/ic_heartrate"
+                app:tint="@color/card_icon" />
+
+            <ProgressBar
+                android:id="@+id/heart_rate_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:gravity="bottom|end"
+                android:theme="@style/progressBar" />
 
             <TextView
                 android:id="@+id/heart_rate_value"
+                style="@style/CardView.Value"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="end"
-                style="@style/CardView.Value"
+                android:visibility="gone"
                 android:gravity="bottom|end" />
         </androidx.cardview.widget.CardView>
 
@@ -118,15 +136,24 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                app:tint="@color/card_icon"
-                android:src="@drawable/ic_calories_burned" />
+                android:src="@drawable/ic_calories_burned"
+                app:tint="@color/card_icon" />
+
+            <ProgressBar
+                android:id="@+id/calories_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:gravity="bottom|end"
+                android:theme="@style/progressBar" />
 
             <TextView
                 android:id="@+id/calories_value"
+                style="@style/CardView.Value"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="end"
-                style="@style/CardView.Value"
+                android:visibility="gone"
                 android:gravity="bottom|end" />
         </androidx.cardview.widget.CardView>
 
@@ -152,27 +179,36 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                app:tint="@color/card_icon"
-                android:src="@drawable/ic_oxygen" />
+                android:src="@drawable/ic_oxygen"
+                app:tint="@color/card_icon" />
+
+            <ProgressBar
+                android:id="@+id/oxygen_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:gravity="bottom|end"
+                android:theme="@style/progressBar" />
 
             <TextView
                 android:id="@+id/oxygen_value"
+                style="@style/CardView.Value"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="end"
-                style="@style/CardView.Value"
+                android:visibility="gone"
                 android:gravity="bottom|end" />
         </androidx.cardview.widget.CardView>
 
         <Button
             android:id="@+id/clear_logs"
+            style="@style/TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/grid_semi_large"
             android:layout_weight="1"
             android:text="@string/dashboard_clear_log"
             android:textAllCaps="false"
-            style="@style/TextButton"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
