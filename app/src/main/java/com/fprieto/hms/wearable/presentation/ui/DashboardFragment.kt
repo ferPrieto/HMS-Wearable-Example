@@ -66,33 +66,7 @@ class DashboardFragment @Inject constructor(
     }
 
     private val dataController: DataController by lazy {
-        builder()
-            .addDataType(DT_CONTINUOUS_STEPS_DELTA, ACCESS_READ)
-            .addDataType(DT_CONTINUOUS_CALORIES_BURNT_TOTAL, ACCESS_READ)
-            .addDataType(
-                POLYMERIZE_CONTINUOUS_ACTIVITY_STATISTICS,
-                ACCESS_READ
-            )
-            .addDataType(DT_INSTANTANEOUS_LOCATION_TRACE, ACCESS_READ)
-            .addDataType(DT_STATISTICS_SLEEP, ACCESS_READ)
-            .addDataType(
-                POLYMERIZE_CONTINUOUS_HEART_RATE_STATISTICS,
-                ACCESS_READ
-            )
-            .addDataType(
-                POLYMERIZE_CONTINUOUS_HEART_RATE_STATISTICS,
-                ACCESS_READ
-            )
-            .addDataType(
-                HealthDataTypes.DT_INSTANTANEOUS_BLOOD_GLUCOSE,
-                ACCESS_READ
-            )
-            .addDataType(HealthDataTypes.DT_INSTANTANEOUS_SPO2, ACCESS_READ)
-            .build().let { hiHealthOptions ->
-                val signInHuaweiId: AuthHuaweiId =
-                    HuaweiIdAuthManager.getExtendedAuthResult(hiHealthOptions)
-                HuaweiHiHealth.getDataController(requireContext(), signInHuaweiId)
-            }
+        HuaweiHiHealth.getDataController(requireContext())
     }
 
     override fun onCreateView(
