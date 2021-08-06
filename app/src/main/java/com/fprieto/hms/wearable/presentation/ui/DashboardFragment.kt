@@ -36,6 +36,17 @@ import com.huawei.wearengine.p2p.SendCallback
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
+import com.huawei.hihealthkit.data.HiHealthKitConstant
+
+import com.huawei.hihealthkit.data.store.HiSportDataCallback
+
+import com.huawei.hihealthkit.data.store.HiHealthDataStore
+import com.huawei.hihealth.error.HiHealthError
+
+import com.huawei.hihealthkit.data.store.HiRealTimeListener
+import org.json.JSONException
+import org.json.JSONObject
+
 
 class DashboardFragment @Inject constructor(
     viewModelFactory: ViewModelProvider.Factory
@@ -167,7 +178,56 @@ class DashboardFragment @Inject constructor(
             device.uuid?.let { registerP2pClientReceiver(device) }
             readTodaySummation(device)
             readLatestData(device)
+            getRealData()
         }
+    }
+
+    private fun getRealData() {
+        HiHealthDataStore.registerSportData(requireContext(), object : HiSportDataCallback {
+            override fun onResult(resultCode: Int) {
+                "registerSportData onResult resultCode:$resultCode".logResult()
+            }
+
+            override fun onDataChanged(state: Int, bundle: Bundle) {
+                "registerSportData onChange state: $state".logResult()
+                if (state == 2) {
+                    "distance : " + bundle[HiHealthKitConstant.BUNDLE_KEY_DISTANCE].toString()
+                        .logResult()
+                    "duration : " + bundle[HiHealthKitConstant.BUNDLE_KEY_DURATION].toString()
+                        .logResult()
+                    "calorie : " + bundle[HiHealthKitConstant.BUNDLE_KEY_CALORIE].toString()
+                        .logResult()
+                    "totalSteps : " + bundle[HiHealthKitConstant.BUNDLE_KEY_TOTAL_STEPS].toString()
+                        .logResult()
+                    "speed : " + bundle[HiHealthKitConstant.BUNDLE_KEY_SPEED].toString().logResult()
+                    "totalCreep : " + bundle[HiHealthKitConstant.BUNDLE_KEY_TOTAL_CREEP].toString()
+                        .logResult()
+                    "totalDescent : " + bundle[HiHealthKitConstant.BUNDLE_KEY_TOTAL_DESCENT].toString()
+                        .logResult()
+                }
+            }
+        })
+
+        HiHealthDataStore.startReadingHeartRate(context, object : HiRealTimeListener {
+            override fun onResult(state: Int) {
+                "ReadingHeartRate onResult state:$state".logResult()
+            }
+
+            override fun onChange(resultCode: Int, value: String) {
+                "startReadingHeartRate onChange resultCode: $resultCode value: $value".logResult()
+                if (resultCode == HiHealthError.SUCCESS) {
+                    try {
+                        val jsonObject = JSONObject(value)
+                        "hri_info : ${jsonObject.getInt("hri_info")}"
+                        "hr_info :  ${jsonObject.getInt("hr_info")}"
+                        "hrsqi_info :   ${jsonObject.getInt("hrsqi_info")}"
+                        "time_info :  ${jsonObject.getLong("time_info")}"
+                    } catch (e: JSONException) {
+                        "JSONException e ${e.message}"
+                    }
+                }
+            }
+        })
     }
 
     private fun registerP2pClientReceiver(device: Device) {

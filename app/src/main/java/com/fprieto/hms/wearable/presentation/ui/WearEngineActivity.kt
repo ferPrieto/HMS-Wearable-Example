@@ -12,9 +12,11 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.fprieto.hms.wearable.R
 import com.fprieto.hms.wearable.databinding.ActivityWearEngineBinding
+import com.huawei.hihealthkit.data.HiHealthExtendScope.HEALTHKIT_EXTEND_HEALTHBEHAVIOR_READ
+import com.huawei.hihealthkit.data.HiHealthExtendScope.HEALTHKIT_EXTEND_SPORT_READ
 import com.huawei.hms.hihealth.HuaweiHiHealth
 import com.huawei.hms.hihealth.SettingController
-import com.huawei.hms.hihealth.data.Scopes
+import com.huawei.hms.hihealth.data.Scopes.*
 import com.huawei.wearengine.HiWear
 import com.huawei.wearengine.auth.AuthCallback
 import com.huawei.wearengine.auth.AuthClient
@@ -25,15 +27,17 @@ import javax.inject.Inject
 
 private val hiWearPermissions = arrayOf(Permission.DEVICE_MANAGER, Permission.NOTIFY)
 private val scopes = arrayOf(
-    Scopes.HEALTHKIT_STEP_READ,
-    Scopes.HEALTHKIT_CALORIES_READ,
-    Scopes.HEALTHKIT_ACTIVITY_READ,
-    Scopes.HEALTHKIT_LOCATION_READ,
-    Scopes.HEALTHKIT_SLEEP_READ,
-    Scopes.HEALTHKIT_HEARTRATE_READ,
-    Scopes.HEALTHKIT_OXYGENSTATURATION_READ,
-    Scopes.HEALTHKIT_BLOODGLUCOSE_READ,
-    Scopes.HEALTHKIT_ACTIVITY_RECORD_READ
+    HEALTHKIT_STEP_READ,
+    HEALTHKIT_CALORIES_READ,
+    HEALTHKIT_ACTIVITY_READ,
+    HEALTHKIT_LOCATION_READ,
+    HEALTHKIT_SLEEP_READ,
+    HEALTHKIT_HEARTRATE_READ,
+    HEALTHKIT_OXYGENSTATURATION_READ,
+    HEALTHKIT_BLOODGLUCOSE_READ,
+    HEALTHKIT_ACTIVITY_RECORD_READ,
+    HEALTHKIT_EXTEND_SPORT_READ,
+    HEALTHKIT_EXTEND_HEALTHBEHAVIOR_READ
 )
 
 class WearEngineActivity : DaggerAppCompatActivity() {
