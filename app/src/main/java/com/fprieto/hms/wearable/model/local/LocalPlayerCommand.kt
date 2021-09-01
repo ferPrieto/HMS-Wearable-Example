@@ -4,5 +4,7 @@ enum class LocalPlayerCommand {
     Play,
     Pause,
     Rewind,
-    FastForward
+    FastForward,
+    Previous,
+    Next
 }

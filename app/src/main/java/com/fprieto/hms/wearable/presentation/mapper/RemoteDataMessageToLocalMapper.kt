@@ -37,6 +37,8 @@ class RemoteDataMessageToLocalMapperImpl @Inject constructor() :
                 "play" -> LocalPlayerCommand.Play
                 "pause" -> LocalPlayerCommand.Pause
                 "rewind" -> LocalPlayerCommand.Rewind
+                "previous" -> LocalPlayerCommand.Previous
+                "next" -> LocalPlayerCommand.Next
                 else -> LocalPlayerCommand.FastForward
             }
         }

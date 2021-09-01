@@ -2,6 +2,8 @@
 
 A companion Android app that interacts with a Huawei SmartWatch(HarmonyOS).
 
+[This is the link] to the HarmonyOS project (watch app) which interacts with this Android project.
+
 ## Setup
 1. Credentials
 
@@ -28,9 +30,20 @@ In order to be able to communicate with a Huawei Smart Watch, it will be necessa
 
 ## Demo
 
-<p align="center">
-  <img src="art/Demo-HMS-Wearable-Example.gif">
-</p>
+<table>Health with Ping(to wake up the watch app)<tr>
+<td><img src="https://github.com/ferPrieto/HarmonyOS-Wearable-Kata/blob/master/art/phone-health.gif" width=320 title="Phone Health" border=2></td>
+<td><img src="https://github.com/ferPrieto/HarmonyOS-Wearable-Kata/blob/master/art/watch-health.gif" width=320 title="Watch Health" border=2></td>
+</tr></table>
+
+<table>Messaging: photo sending (from phone to watch) and text message (from watch to phone)<tr>
+<td><img src="https://github.com/ferPrieto/HarmonyOS-Wearable-Kata/blob/master/art/phone-messaging.gif" width=320 title="Phone Messaging" border=2></td>
+<td><img src="https://github.com/ferPrieto/HarmonyOS-Wearable-Kata/blob/master/art/watch-messaging.gif" width=320 title="Watch Messaging" border=2></td>
+</tr></table>
+
+<table>Video Player: video control from the watch<tr>
+<td><img src="https://github.com/ferPrieto/HarmonyOS-Wearable-Kata/blob/master/art/phone-videoplayer.gif" width=320 title="Phone VideoPlayer" border=2></td>
+<td><img src="https://github.com/ferPrieto/HarmonyOS-Wearable-Kata/blob/master/art/watch-videoplayer.gif" width=320 title="Watch VideoPlayer" border=2></td>
+</tr></table>
 
 
 ## License
@@ -53,3 +66,4 @@ In order to be able to communicate with a Huawei Smart Watch, it will be necessa
 [agconnect-services.json]: https://developer.huawei.com/consumer/de/doc/development/AppGallery-connect-Guides/agc-get-started
 [healthkit-application]: https://developer.huawei.com/consumer/en/doc/development/HMSCore-Guides/apply-kitservice-0000001050071707
 [wearengine-application]: https://developer.huawei.com/consumer/en/doc/development/connectivity-Guides/applying-wearengine-0000001050777982
+[This is the link]: https://github.com/ferPrieto/HMS-Wearable-Example

@@ -57,7 +57,7 @@ class MessagingFragment @Inject constructor(
         set(value) {
             field = value
             setDeviceIntoRadioButton(value)
-            registerReceiver()
+            registerReceiver(value)
         }
 
     private fun setDeviceIntoRadioButton(value: Device?) {
@@ -104,12 +104,6 @@ class MessagingFragment @Inject constructor(
     override fun onResume() {
         super.onResume()
         viewModel.getSelectedDevice()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        sendCallback = null
-        selectedDevice = null
     }
 
     override fun onCreateView(
@@ -259,7 +253,7 @@ class MessagingFragment @Inject constructor(
             }
     }
 
-    private fun registerReceiver() {
+    private fun registerReceiver(selectedDevice: Device?) {
         val receiver = Receiver { message ->
             message?.let {
                 when (it.type) {
