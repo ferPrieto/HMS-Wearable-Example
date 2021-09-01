@@ -48,7 +48,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_steps"
-                app:tint="@color/card_icon" />
+                app:tint="@color/card_steps" />
 
             <ProgressBar
                 android:id="@+id/steps_progress"
@@ -93,7 +93,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_heartrate"
-                app:tint="@color/card_icon" />
+                app:tint="@color/card_heart_rate" />
 
             <ProgressBar
                 android:id="@+id/heart_rate_progress"
@@ -137,7 +137,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_calories_burned"
-                app:tint="@color/card_icon" />
+                app:tint="@color/card_calories" />
 
             <ProgressBar
                 android:id="@+id/calories_progress"
@@ -180,7 +180,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_oxygen"
-                app:tint="@color/card_icon" />
+                app:tint="@color/card_oxygen" />
 
             <ProgressBar
                 android:id="@+id/oxygen_progress"

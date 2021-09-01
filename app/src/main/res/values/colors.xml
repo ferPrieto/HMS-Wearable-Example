@@ -8,4 +8,8 @@
     <color name="colorBackground">#FFFFFF</color>
 
     <color name="card_icon">#FF4081</color>
+    <color name="card_calories">#01524D</color>
+    <color name="card_heart_rate">#1CB075</color>
+    <color name="card_steps">#007247</color>
+    <color name="card_oxygen">#30ECB1</color>
 </resources>
