@@ -1,11 +1,15 @@
 package com.fprieto.hms.wearable.presentation.ui
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -19,13 +23,26 @@ import com.fprieto.hms.wearable.databinding.ViewLogsBinding
 import com.fprieto.hms.wearable.extensions.await
 import com.fprieto.hms.wearable.presentation.vm.DashboardViewModel
 import com.fprieto.hms.wearable.presentation.vm.observeEvent
+import com.huawei.hihealth.error.HiHealthError
+import com.huawei.hihealthkit.auth.HiHealthAuth.requestAuthorization
+import com.huawei.hihealthkit.data.HiHealthExtendScope
+import com.huawei.hihealthkit.data.HiHealthKitConstant
+import com.huawei.hihealthkit.data.store.HiHealthDataStore
+import com.huawei.hihealthkit.data.store.HiRealTimeListener
+import com.huawei.hihealthkit.data.store.HiSportDataCallback
+import com.huawei.hms.common.ApiException
 import com.huawei.hms.hihealth.DataController
 import com.huawei.hms.hihealth.HuaweiHiHealth
 import com.huawei.hms.hihealth.data.DataType
 import com.huawei.hms.hihealth.data.DataType.*
 import com.huawei.hms.hihealth.data.HealthDataTypes
+import com.huawei.hms.hihealth.data.HealthDataTypes.DT_INSTANTANEOUS_SPO2
 import com.huawei.hms.hihealth.data.SamplePoint
 import com.huawei.hms.hihealth.data.SampleSet
+import com.huawei.hms.support.api.entity.auth.Scope
+import com.huawei.hms.support.hwid.HuaweiIdAuthManager
+import com.huawei.hms.support.hwid.request.HuaweiIdAuthParams
+import com.huawei.hms.support.hwid.request.HuaweiIdAuthParamsHelper
 import com.huawei.wearengine.HiWear
 import com.huawei.wearengine.device.Device
 import com.huawei.wearengine.device.DeviceClient
@@ -33,20 +50,16 @@ import com.huawei.wearengine.p2p.Message
 import com.huawei.wearengine.p2p.P2pClient
 import com.huawei.wearengine.p2p.Receiver
 import com.huawei.wearengine.p2p.SendCallback
+import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.coroutines.launch
-import timber.log.Timber
-import javax.inject.Inject
-import com.huawei.hihealthkit.data.HiHealthKitConstant
-
-import com.huawei.hihealthkit.data.store.HiSportDataCallback
-
-import com.huawei.hihealthkit.data.store.HiHealthDataStore
-import com.huawei.hihealth.error.HiHealthError
-
-import com.huawei.hihealthkit.data.store.HiRealTimeListener
 import org.json.JSONException
 import org.json.JSONObject
+import timber.log.Timber
+import javax.inject.Inject
 
+private val extendedScopes = arrayListOf(
+    Scope(HiHealthExtendScope.HEALTHKIT_EXTEND_SPORT_READ)
+)
 
 class DashboardFragment @Inject constructor(
     viewModelFactory: ViewModelProvider.Factory
@@ -183,6 +196,18 @@ class DashboardFragment @Inject constructor(
     }
 
     private fun getRealData() {
+        HiHealthDataStore.startSport(
+            context, HiHealthKitConstant.SPORT_TYPE_RUN
+        ) { p0, p1 ->
+            if (p0 == HiHealthError.SUCCESS) {
+                "start sport success:$p0".logResult()
+                registerSportData()
+                startReadingHeartRate()
+            }
+        }
+    }
+
+    private fun registerSportData() {
         HiHealthDataStore.registerSportData(requireContext(), object : HiSportDataCallback {
             override fun onResult(resultCode: Int) {
                 "registerSportData onResult resultCode:$resultCode".logResult()
@@ -207,7 +232,9 @@ class DashboardFragment @Inject constructor(
                 }
             }
         })
+    }
 
+    private fun startReadingHeartRate() {
         HiHealthDataStore.startReadingHeartRate(context, object : HiRealTimeListener {
             override fun onResult(state: Int) {
                 "ReadingHeartRate onResult state:$state".logResult()
@@ -322,7 +349,7 @@ class DashboardFragment @Inject constructor(
                 dataController.readLatestData(
                     listOf(
                         DT_INSTANTANEOUS_HEART_RATE,
-                        HealthDataTypes.DT_INSTANTANEOUS_SPO2
+                        DT_INSTANTANEOUS_SPO2
                     )
                 ).await().let { results ->
                     results.keys.map { dataType ->
@@ -335,13 +362,13 @@ class DashboardFragment @Inject constructor(
                                 )
                                 populateHeartRate(results[DT_INSTANTANEOUS_HEART_RATE])
                             }
-                            HealthDataTypes.DT_INSTANTANEOUS_SPO2 -> {
+                            DT_INSTANTANEOUS_SPO2 -> {
                                 sendHealthDataToConnectedDevice(
-                                    results[DT_INSTANTANEOUS_HEART_RATE],
+                                    results[DT_INSTANTANEOUS_SPO2],
                                     HealthData.Oxygen,
                                     device
                                 )
-                                populateOxygenInBlood(results[HealthDataTypes.DT_INSTANTANEOUS_SPO2])
+                                populateOxygenInBlood(results[DT_INSTANTANEOUS_SPO2])
                             }
                         }
                     }
@@ -397,8 +424,12 @@ class DashboardFragment @Inject constructor(
             HealthData.Steps -> "Steps"
             else -> "Oxygen"
         }.let { healthDataType ->
-            "$healthDataType - ${samplePoint?.fieldValues?.values?.first().toString()}"
-                .toByteArray()
+            val healthDataValue = if (healthData == HealthData.Oxygen) {
+                samplePoint?.fieldValues?.values?.last().toString()
+            } else {
+                samplePoint?.fieldValues?.values?.first().toString()
+            }
+            "$healthDataType - $healthDataValue".toByteArray()
         }
 
     private fun sendHealthDataToConnectedDevice(

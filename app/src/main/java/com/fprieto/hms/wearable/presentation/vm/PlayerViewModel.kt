@@ -5,9 +5,9 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fprieto.hms.wearable.data.repository.DeviceRepository
-import com.fprieto.hms.wearable.presentation.mapper.RemoteDataMessageToLocalMapper
 import com.fprieto.hms.wearable.model.local.LocalMessageType
 import com.fprieto.hms.wearable.model.local.LocalPlayerCommand
+import com.fprieto.hms.wearable.presentation.mapper.RemoteDataMessageToLocalMapper
 import com.huawei.wearengine.device.Device
 import com.huawei.wearengine.p2p.Message
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -25,6 +25,8 @@ abstract class PlayerViewModel : ViewModel() {
     abstract val pauseVideo: LiveData<Event<Unit>>
     abstract val rewindVideo: LiveData<Event<Unit>>
     abstract val fastForwardVideo: LiveData<Event<Unit>>
+    abstract val previousVideo: LiveData<Event<Unit>>
+    abstract val nextVideo: LiveData<Event<Unit>>
 }
 
 class PlayerViewModelImpl @Inject constructor(
@@ -37,6 +39,8 @@ class PlayerViewModelImpl @Inject constructor(
     private val _pauseVideo = MediatorLiveData<Event<Unit>>()
     private val _rewindVideo = MediatorLiveData<Event<Unit>>()
     private val _fastForwardVideo = MediatorLiveData<Event<Unit>>()
+    private val _previousVideo = MediatorLiveData<Event<Unit>>()
+    private val _nextVideo = MediatorLiveData<Event<Unit>>()
 
     override val selectedDevice: LiveData<Event<Device>>
         get() = _selectedDevice
@@ -52,6 +56,12 @@ class PlayerViewModelImpl @Inject constructor(
 
     override val fastForwardVideo: LiveData<Event<Unit>>
         get() = _fastForwardVideo
+
+    override val previousVideo: LiveData<Event<Unit>>
+        get() = _previousVideo
+
+    override val nextVideo: LiveData<Event<Unit>>
+        get() = _nextVideo
 
     private val errorHandler = CoroutineExceptionHandler { _, exception ->
         Timber.e(exception)
@@ -78,6 +88,12 @@ class PlayerViewModelImpl @Inject constructor(
                     }
                     LocalPlayerCommand.Rewind -> {
                         _rewindVideo.postValue(eventOf(Unit))
+                    }
+                    LocalPlayerCommand.Previous -> {
+                        _previousVideo.postValue(eventOf(Unit))
+                    }
+                    LocalPlayerCommand.Next -> {
+                        _nextVideo.postValue(eventOf(Unit))
                     }
                     else -> {
                         _fastForwardVideo.postValue(eventOf(Unit))

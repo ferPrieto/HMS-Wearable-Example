@@ -24,6 +24,7 @@ import com.huawei.wearengine.device.DeviceClient
 import com.huawei.wearengine.p2p.Message
 import com.huawei.wearengine.p2p.P2pClient
 import com.huawei.wearengine.p2p.Receiver
+import com.huawei.wearengine.p2p.SendCallback
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -43,6 +44,8 @@ class PlayerFragment @Inject constructor(
 
     private val credentialsProvider: CredentialsProvider = CredentialsProvider()
     private var playerState: VideoPlayerState = VideoPlayerState()
+
+    private var sendCallback: SendCallback? = null
 
     private var selectedDevice: Device? = null
         set(value) {
@@ -67,10 +70,6 @@ class PlayerFragment @Inject constructor(
         HiWear.getDeviceClient(context)
     }
 
-    private val audioPlayer: AudioPlayer by lazy {
-        AudioPlayer(context)
-    }
-
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putParcelable(PLAYER_STATE_KEY, playerState)
@@ -79,6 +78,12 @@ class PlayerFragment @Inject constructor(
     override fun onResume() {
         super.onResume()
         viewModel.getSelectedDevice()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sendCallback = null
+        selectedDevice = null
     }
 
     override fun onCreateView(
@@ -119,7 +124,7 @@ class PlayerFragment @Inject constructor(
 
     private fun renderVideo() {
         playerState = playerState.checkAndSet(VIDEO_URL)
-        "Video URL loaded".logResult()
+        Timber.d("Video URL loaded")
         binding.videoPlayer.prepareToPlay(this, playerState)
     }
 
@@ -130,19 +135,27 @@ class PlayerFragment @Inject constructor(
 
         viewModel.playVideo.observeEvent(this) {
             binding.videoPlayer.play()
-            "Play Command Selected".logResult()
+            Timber.d("Play Command Selected")
         }
         viewModel.pauseVideo.observeEvent(this) {
             binding.videoPlayer.pause()
-            "Pause Command Selected".logResult()
+            Timber.d("Pause Command Selected")
         }
         viewModel.rewindVideo.observeEvent(this) {
             binding.videoPlayer.rewind()
-            "Rewind Command Selected".logResult()
+            Timber.d("Rewind Command Selected")
         }
         viewModel.fastForwardVideo.observeEvent(this) {
             binding.videoPlayer.fastForward()
-            "FastForward Command Selected".logResult()
+            Timber.d("FastForward Command Selected")
+        }
+        viewModel.previousVideo.observeEvent(this) {
+            binding.videoPlayer.previous()
+            Timber.d("Previous Command Selected")
+        }
+        viewModel.nextVideo.observeEvent(this) {
+            binding.videoPlayer.next()
+            Timber.d("Next Command Selected")
         }
     }
 
@@ -155,44 +168,51 @@ class PlayerFragment @Inject constructor(
         }
     }
 
+    private fun sendCommand(text: String) {
+        Message.Builder()
+            .setPayload(text.toByteArray())
+            .build().let { message ->
+                p2pClient.send(selectedDevice, message, sendCallback).addOnSuccessListener {
+                    Timber.d("Sent message to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()}")
+                }.addOnFailureListener {
+                    Timber.d("Send message to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} failed")
+                }
+            }
+    }
+
+    private fun initResultCallbackAndSender() {
+        sendCallback = object : SendCallback {
+            override fun onSendResult(resultCode: Int) {
+                Timber.d("Send message to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} Result: $resultCode")
+            }
+
+            override fun onSendProgress(progress: Long) {
+                Timber.d("Send message to ${selectedDevice?.name}'s ${credentialsProvider.getPeerPkgName()} Progress: $progress")
+            }
+        }
+        Timber.d("Send Result Callback Registered!")
+    }
+
+
     private fun registerReceivers() {
         val receiver = Receiver { message ->
             message?.let { message ->
                 when (message.type) {
                     Message.MESSAGE_TYPE_DATA -> {
-                        "Received data".logResult()
                         viewModel.manageReceivedMessage(message)
+                        Timber.d("Received data")
                     }
-                    Message.MESSAGE_TYPE_FILE -> "Received file".logResult()
+                    Message.MESSAGE_TYPE_FILE -> Timber.d("Received file")
 
-                    Message.MESSAGE_TYPE_DEFAULT -> "Received default message".logResult()
+                    Message.MESSAGE_TYPE_DEFAULT -> Timber.d("Received default message")
                 }
             } ?: run {
-                "Failed to manage the message command".logResult()
+                Timber.d("Failed to manage the message command")
             }
         }
         p2pClient.registerReceiver(selectedDevice, receiver)
-            .addOnSuccessListener { "Register receiver listener succeed!".logResult() }
-            .addOnFailureListener { "Register receiver listener failed!".logError(it) }
-    }
-
-    private fun String.logResult() {
-        appendOnOutputView(this)
-        Timber.d(this)
-    }
-
-    private fun String.logError(exception: Exception) {
-        appendOnOutputView(this)
-        Timber.e(exception, this)
-    }
-
-    private fun appendOnOutputView(text: String) {
-        requireActivity().runOnUiThread {
-            viewLogsBinding.logOutputTextView.append(text + System.lineSeparator())
-            viewLogsBinding.logOutputTextView.post {
-                viewLogsBinding.scrollView.fullScroll(View.FOCUS_DOWN)
-            }
-        }
+            .addOnSuccessListener { Timber.d("Register receiver listener succeed!") }
+            .addOnFailureListener { Timber.e("Register receiver listener failed!", this) }
     }
 }
 
